@@ -6,3 +6,4 @@ eventlet==0.33.3
 flask-login==0.6.3
 Werkzeug==3.0.0
 flask-cors==4.0.0
+gunicorn
