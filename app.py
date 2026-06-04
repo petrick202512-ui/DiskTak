@@ -18,7 +18,11 @@ app.config['SECRET_KEY'] = os.getenv("SECRET_KEY", "disck_tallk_secret_key_2024"
 CORS(app)
 
 # Configurar SocketIO
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(
+    app,
+    cors_allowed_origins="*",
+    async_mode="eventlet"
+)
 
 # Registrar Blueprints
 app.register_blueprint(auth_bp)
