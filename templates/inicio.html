@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .home-header {
+        padding: 40px 20px 20px;
+    }
+
+    .greeting h1 {
+        font-size: 1.8rem;
+        color: var(--cream);
+        margin-bottom: 5px;
+    }
+
+    .greeting p {
+        color: var(--soft-green);
+        font-weight: 500;
+    }
+
+    .action-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .main-card {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        text-decoration: none;
+        color: var(--cream);
+        transition: transform 0.3s ease;
+    }
+
+    .main-card:active {
+        transform: scale(0.98);
+    }
+
+    .card-icon {
+        width: 60px;
+        height: 60px;
+        background: rgba(109, 186, 171, 0.1);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--soft-green);
+    }
+
+    .card-info h3 {
+        font-size: 1.2rem;
+        margin-bottom: 4px;
+    }
+
+    .card-info p {
+        font-size: 0.9rem;
+        opacity: 0.7;
+    }
+
+    .arrow-icon {
+        margin-left: auto;
+        opacity: 0.5;
+    }
+
+    /* Card de Emergência */
+    .emergency-card {
+        margin-top: 30px;
+        background: rgba(231, 76, 60, 0.1);
+        border: 1px solid rgba(231, 76, 60, 0.2);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <header class="home-header fade-in">
+        <div class="greeting">
+            <h1>Olá, {{ nome }}</h1>
+            <p>
+                {% if session['user_type'] == 'psico' %}
+                    sua ajuda faz a diferença hoje.
+                {% else %}
+                    como podemos te ajudar hoje?
+                {% endif %}
+            </p>
+        </div>
+    </header>
+
+    <div class="action-cards">
+        {% if session['user_type'] == 'psico' %}
+            <!-- Próximas Consultas Confirmadas -->
+            {% if consultas and consultas|length > 0 %}
+            <div class="glass-card" style="background: rgba(109, 186, 171, 0.1); border-left: 4px solid var(--soft-green); padding: 16px; margin-bottom: 10px;">
+                <h3 style="color: var(--soft-green); margin-bottom: 12px; font-size: 1.1rem;">
+                    <i class="fa-solid fa-calendar-check"></i> Próximas Consultas Confirmadas
+                </h3>
+                {% for consulta in consultas[:3] %}
+                <div style="padding: 10px 0; border-bottom: 1px solid rgba(109, 186, 171, 0.2);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; color: var(--cream);">
+                        <div>
+                            <p style="font-weight: 600; margin-bottom: 4px;">
+                                {{ consulta.paciente.nome if consulta.paciente else 'Usuário' }}
+                            </p>
+                            <p style="font-size: 0.9rem; opacity: 0.8;">
+                                {% if consulta.data_consulta %}
+                                    {% if consulta.data_consulta.__class__.__name__ == 'datetime' %}
+                                        📅 {{ consulta.data_consulta.strftime('%d/%m/%Y às %H:%M') }}
+                                    {% else %}
+                                        📅 {{ consulta.data_consulta }}
+                                    {% endif %}
+                                {% else %}
+                                    📅 Data não definida
+                                {% endif %}
+                            </p>
+                            {% if consulta.tipo_consulta %}
+                            <p style="font-size: 0.85rem; opacity: 0.7; color: var(--soft-green);">
+                                {{ consulta.tipo_consulta }}
+                            </p>
+                            {% endif %}
+                        </div>
+                        <a href="{{ url_for('user.chamada_video', consulta_id=consulta._id) }}" class="btn-action" style="padding: 6px 12px; font-size: 0.85rem;">
+                            <i class="fa fa-phone" style="color: white;"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Dashboard do Psicólogo -->
+            <!-- <a href="{{ url_for('chat.conversas') }}" class="glass-card main-card fade-in" style="animation-delay: 0.1s;">
+                <div class="card-icon">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                </div>
+                <div class="card-info">
+                    <h3>Atendimentos</h3>
+                    <p>Ver mensagens de pessoas aguardando.</p>
+                </div>
+                <i class="fa-solid fa-chevron-right arrow-icon"></i>
+            </a> -->
+
+            <!-- <a href="{{ url_for('user.admin') }}" class="glass-card main-card fade-in" style="animation-delay: 0.2s;">
+                <div class="card-icon">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div class="card-info">
+                    <h3>Painel de Controle</h3>
+                    <p>Ver estatísticas e novos desabafos.</p>
+                </div>
+                <i class="fa-solid fa-chevron-right arrow-icon"></i>
+            </a> -->
+
+            <!-- <a href="{{ url_for('user.mensagens_usuarios') }}" class="glass-card main-card fade-in" style="animation-delay: 0.3s;">
+                <div class="card-icon">
+                    <i class="fa-solid fa-envelope"></i>
+                </div>
+                <div class="card-info">
+                    <h3>Mensagens de Usuários</h3>
+                    <p>Ler e responder desabafos.</p>
+                </div>
+                <i class="fa-solid fa-chevron-right arrow-icon"></i>
+            </a> -->
+        {% else %}
+            <!-- Dashboard do Usuário -->
+            <a href="{{ url_for('user.psicologos') }}" class="glass-card main-card fade-in" style="animation-delay: 0.1s;">
+                <div class="card-icon">
+                    <i class="fa-solid fa-comment-dots"></i>
+                </div>
+                <div class="card-info">
+                    <h3>Preciso conversar</h3>
+                    <p>Falar com um psicólogo voluntário agora.</p>
+                </div>
+                <i class="fa-solid fa-chevron-right arrow-icon"></i>
+            </a>
+<!-- 
+            <a href="{{ url_for('user.desabafar') }}" class="glass-card main-card fade-in" style="animation-delay: 0.2s;">
+                <div class="card-icon">
+                    <i class="fa-solid fa-pen-nib"></i>
+                </div>
+                <div class="card-info">
+                    <h3>Quero desabafar</h3>
+                    <p>Escrever o que estou sentindo.</p>
+                </div>
+                <i class="fa-solid fa-chevron-right arrow-icon"></i>
+            </a> -->
+        {% endif %}
+
+        <div class="glass-card emergency-card fade-in" style="animation-delay: 0.4s;">
+            <h4 style="color: #e74c3c; margin-bottom: 10px;"><i class="fa-solid fa-circle-exclamation"></i> Precisa de ajuda urgente?</h4>
+            <p style="font-size: 0.85rem; opacity: 0.8;">Se você está em risco, procure ajuda imediata ligando para o <strong>CVV 188</strong> ou <strong>SAMU 192</strong>.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="mobile-nav">
+    <a href="{{ url_for('user.inicio') }}" class="nav-item active">
+        <i class="fa-solid fa-house"></i>
+        <span>Início</span>
+    </a>
+    {% if session['user_type'] != 'psico' %}
+        <a href="{{ url_for('user.minhas_consultas') }}" class="nav-item">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Consultas</span>
+        </a>
+        <a href="{{ url_for('user.recursos') }}" class="nav-item">
+            <i class="fa-solid fa-book-open"></i>
+            <span>Recursos</span>
+        </a>
+    {% endif %}
+    <!-- Escrever removido apenas desta página -->
+    <a href="{{ url_for('user.perfil') }}" class="nav-item">
+        <i class="fa-solid fa-user"></i>
+        <span>Perfil</span>
+    </a>
+</nav>
+{% endblock %}

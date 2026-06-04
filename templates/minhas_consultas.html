@@ -1,0 +1,441 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .consultas-container {
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .consultas-header {
+        padding: 30px 20px 20px;
+    }
+
+    .consultas-header h2 {
+        font-size: 1.6rem;
+        color: var(--light-green);
+        margin-bottom: 8px;
+    }
+
+    .consultas-header p {
+        font-size: 0.9rem;
+        opacity: 0.7;
+    }
+
+    .tabs {
+        display: flex;
+        gap: 10px;
+        padding: 0 20px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        overflow-x: auto;
+    }
+
+    .tab-btn {
+        padding: 12px 16px;
+        background: none;
+        color: var(--cream);
+        border: none;
+        cursor: pointer;
+        border-bottom: 2px solid transparent;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .tab-btn.active {
+        color: var(--soft-green);
+        border-bottom-color: var(--soft-green);
+    }
+
+    .consultas-list {
+        padding: 20px;
+    }
+
+    .consulta-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .consulta-card:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--soft-green);
+    }
+
+    .consulta-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .consulta-psico-name {
+        font-size: 1.1rem;
+        color: var(--soft-green);
+        font-weight: 600;
+    }
+
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-agendada {
+        background: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+    }
+
+    .status-confirmada {
+        background: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+    }
+
+    .status-realizada {
+        background: rgba(155, 89, 182, 0.2);
+        color: #9b59b6;
+    }
+
+    .status-cancelada {
+        background: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+    }
+
+    .consulta-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 15px;
+        padding: 15px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-item i {
+        color: var(--soft-green);
+        font-size: 1rem;
+    }
+
+    .info-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .info-label {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8rem;
+    }
+
+    .info-value {
+        color: var(--cream);
+        font-size: 0.95rem;
+        font-weight: 500;
+    }
+
+    .consulta-descricao {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    .consulta-descricao-label {
+        color: var(--soft-green);
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .consulta-descricao-text {
+        color: var(--cream);
+        font-size: 0.9rem;
+        line-height: 1.4;
+        opacity: 0.9;
+    }
+
+    .consulta-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-action {
+        flex: 1;
+        padding: 10px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-detalhes {
+        background: rgba(109, 186, 171, 0.2);
+        color: var(--soft-green);
+        border: 1px solid var(--soft-green);
+    }
+
+    .btn-detalhes:hover {
+        background: rgba(109, 186, 171, 0.3);
+    }
+
+    .btn-cancelar {
+        background: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+        border: 1px solid #e74c3c;
+    }
+
+    .btn-cancelar:hover {
+        background: rgba(231, 76, 60, 0.3);
+    }
+
+    .btn-confirmar {
+        background: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+        border: 1px solid #2ecc71;
+    }
+
+    .btn-confirmar:hover {
+        background: rgba(46, 204, 113, 0.3);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: var(--soft-green);
+        opacity: 0.5;
+        margin-bottom: 15px;
+    }
+
+    .empty-state h3 {
+        color: var(--cream);
+        margin-bottom: 10px;
+        font-size: 1.2rem;
+    }
+
+    .empty-state p {
+        color: var(--cream);
+        opacity: 0.6;
+        margin-bottom: 20px;
+    }
+
+    .btn-agendar-novo {
+        display: inline-block;
+        padding: 10px 24px;
+        background: linear-gradient(135deg, var(--soft-green), var(--teal));
+        color: var(--primary-dark);
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-agendar-novo:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(109, 186, 171, 0.3);
+    }
+
+    @media (max-width: 600px) {
+        .consulta-info {
+            grid-template-columns: 1fr;
+        }
+
+        .consultas-container {
+            padding: 10px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <header class="consultas-header fade-in">
+        <h2>Minhas Consultas</h2>
+        <p>Acompanhe suas consultas agendadas</p>
+    </header>
+
+    {% if consultas|length > 0 %}
+        <div class="consultas-list">
+            {% for consulta in consultas %}
+                {% set psico = consulta.psico %}
+                <div class="glass-card consulta-card fade-in">
+                    <div class="consulta-header">
+                        <div>
+                            <div class="consulta-psico-name">
+                                <i class="fa-solid fa-user-tie"></i> {{ psico.nome if psico else 'Psicólogo' }}
+                            </div>
+                        </div>
+                        <span class="status-badge status-{{ consulta.status }}">
+                            {{ consulta.status|title }}
+                        </span>
+                    </div>
+
+                    <div class="consulta-info">
+                        <div class="info-item">
+                            <i class="fa-solid fa-calendar-days"></i>
+                            <div class="info-text">
+                                <span class="info-label">Data</span>
+                                <span class="info-value">
+                                    {% if consulta.data_consulta is string %}
+                                        {{ consulta.data_consulta }}
+                                    {% else %}
+                                        {{ consulta.data_consulta.strftime('%d/%m/%Y') if consulta.data_consulta else 'N/A' }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="info-item">
+                            <i class="fa-solid fa-clock"></i>
+                            <div class="info-text">
+                                <span class="info-label">Horário</span>
+                                <span class="info-value">{{ consulta.horario }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if consulta.descricao %}
+                    <div class="consulta-descricao">
+                        <div class="consulta-descricao-label">Motivo/Descrição</div>
+                        <div class="consulta-descricao-text">{{ consulta.descricao }}</div>
+                    </div>
+                    {% endif %}
+
+                    <div class="consulta-actions">
+                        {% if consulta.status == 'agendada' %}
+                            <button class="btn-action btn-confirmar" onclick="confirmarConsulta('{{ consulta._id }}')">
+                                <i class="fa-solid fa-check"></i> Confirmar
+                            </button>
+                            <button class="btn-action btn-cancelar" onclick="cancelarConsulta('{{ consulta._id }}')">
+                                <i class="fa-solid fa-times"></i> Cancelar
+                            </button>
+                        {% elif consulta.status == 'cancelada' %}
+                            <button class="btn-action btn-detalhes" disabled style="opacity: 0.5;">
+                                Consulta Cancelada
+                            </button>
+                        {% elif consulta.status == 'realizada' %}
+                            <button class="btn-action btn-detalhes" onclick="avaliarConsulta('{{ consulta._id }}')">
+                                <i class="fa-solid fa-star"></i> Avaliar
+                            </button>
+                        {% else %}
+                            <button class="btn-action btn-detalhes">
+                                {{ consulta.status|title }}
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fa-solid fa-calendar-plus"></i>
+            <h3>Nenhuma consulta agendada</h3>
+            <p>Você ainda não tem consultas. Comece agora clicando em um psicólogo!</p>
+            <a href="{{ url_for('user.psicologos') }}" class="btn-agendar-novo">
+                <i class="fa-solid fa-plus"></i> Agendar Consulta
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="mobile-nav">
+    <a href="{{ url_for('user.inicio') }}" class="nav-item">
+        <i class="fa-solid fa-house"></i>
+        <span>Início</span>
+    </a>
+    {% if session['user_type'] != 'psico' %}
+    <a href="{{ url_for('user.minhas_consultas') }}" class="nav-item active">
+        <i class="fa-solid fa-calendar-check"></i>
+        <span>Consultas</span>
+    </a>
+    {% endif %}
+
+    <a href="{{ url_for('user.recursos') }}" class="nav-item">
+        <i class="fa-solid fa-book-open"></i>
+        <span>Recursos</span>
+    </a>
+    <a href="{{ url_for('user.perfil') }}" class="nav-item">
+        <i class="fa-solid fa-user"></i>
+        <span>Perfil</span>
+    </a>
+</nav>
+
+<script>
+// Fallback para showToast se não estiver definida
+if (typeof showToast === 'undefined') {
+    window.showToast = function(msg, type) {
+        console.log(msg);
+    };
+}
+
+async function confirmarConsulta(consultaId) {
+    if (confirm('Deseja confirmar esta consulta?')) {
+        try {
+            const response = await fetch(`/api/confirmar-consulta/${consultaId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                alert('✅ Consulta confirmada com sucesso!');
+                location.reload();
+            } else {
+                const data = await response.json();
+                alert('❌ ' + (data.erro || 'Erro ao confirmar'));
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('❌ Erro ao confirmar consulta');
+        }
+    }
+}
+
+async function cancelarConsulta(consultaId) {
+    if (confirm('Deseja cancelar esta consulta?')) {
+        try {
+            const response = await fetch(`/api/cancelar-consulta/${consultaId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.ok) {
+                alert('✅ Consulta cancelada');
+                location.reload();
+            } else {
+                const data = await response.json();
+                alert('❌ ' + (data.erro || 'Erro ao cancelar'));
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            alert('❌ Erro ao cancelar consulta');
+        }
+    }
+}
+
+function avaliarConsulta(consultaId) {
+    // Implementar modal de avaliação
+    alert('Sistema de avaliação em breve!');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .psico-header {
+        padding: 40px 20px 20px;
+    }
+
+    .psico-header h2 {
+        font-size: 1.6rem;
+        color: var(--light-green);
+        margin-bottom: 8px;
+    }
+
+    .psico-header p {
+        font-size: 0.9rem;
+        opacity: 0.7;
+    }
+
+    .filters {
+        display: flex;
+        gap: 10px;
+        padding: 0 20px;
+        overflow-x: auto;
+        padding-bottom: 10px;
+        scrollbar-width: none;
+    }
+
+    .filters::-webkit-scrollbar { display: none; }
+
+    .filter-btn {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 8px 16px;
+        border-radius: 20px;
+        color: var(--cream);
+        font-size: 0.85rem;
+        white-space: nowrap;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn.active {
+        background: var(--teal);
+        border-color: var(--soft-green);
+    }
+
+    .psico-list {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .psico-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        text-decoration: none;
+        color: var(--cream);
+    }
+
+    .psico-avatar {
+        width: 65px;
+        height: 65px;
+        border-radius: 18px;
+        position: relative;
+        background: var(--petroleum);
+        overflow: hidden;
+    }
+
+    .psico-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .status-badge {
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        width: 14px;
+        height: 14px;
+        background: #2ecc71;
+        border: 2px solid var(--primary-dark);
+        border-radius: 50%;
+    }
+
+    .psico-info {
+        flex: 1;
+    }
+
+    .psico-info h3 {
+        font-size: 1.1rem;
+        margin-bottom: 2px;
+    }
+
+    .psico-info p {
+        font-size: 0.8rem;
+        opacity: 0.6;
+        margin-bottom: 5px;
+    }
+
+    .rating {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        color: #f1c40f;
+        font-size: 0.8rem;
+    }
+
+    .chat-now-btn {
+        background: rgba(109, 186, 171, 0.1);
+        color: var(--soft-green);
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .psico-card:hover .chat-now-btn {
+        background: var(--soft-green);
+        color: var(--primary-dark);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <header class="psico-header fade-in">
+        <h2>Nossos psicólogos</h2>
+        <p>voluntários prontos para te ouvir com empatia.</p>
+    </header>
+
+    <div class="filters fade-in" style="animation-delay: 0.1s;">
+        <button class="filter-btn active">Todos</button>
+        <button class="filter-btn">Online agora</button>
+        <button class="filter-btn">Mais avaliados</button>
+        <button class="filter-btn">Ansiedade</button>
+    </div>
+
+    <div class="psico-list">
+        {% for psico in psicologos %}
+        <a href="{{ url_for('user.perfil_psicologo', psico_id=psico._id) }}" class="glass-card psico-card fade-in" style="animation-delay: {{ loop.index0 * 0.1 }}s;">
+            <div class="psico-avatar">
+                <img src="{{ psico.avatar or 'https://i.pravatar.cc/150' }}" alt="{{ psico.nome }}">
+                <div class="status-badge" style="background: {{ '#2ecc71' if psico.status == 'online' else '#95a5a6' }};"></div>
+            </div>
+            <div class="psico-info">
+                <h3>{{ psico.nome }}</h3>
+                <p>{{ psico.especialidade or 'Psicólogo Voluntário' }}</p>
+                <div class="rating">
+                    {% if psico.get('nota_media') and psico.nota_media > 0 %}
+                        {% set media = psico.nota_media|float %}
+                        {% for i in range(5) %}
+                            {% if i < media|int %}
+                                <i class="fa-solid fa-star"></i>
+                            {% elif i < media %}
+                                <i class="fa-solid fa-star-half-stroke"></i>
+                            {% else %}
+                                <i class="fa-regular fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                        <span>{{ "%.1f"|format(media) }} ({{ psico.get('total_avaliacoes', 0) }} avaliações)</span>
+                    {% else %}
+                        {% for i in range(5) %}
+                            <i class="fa-regular fa-star"></i>
+                        {% endfor %}
+                        <span>Sem avaliações</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="chat-now-btn">
+                <i class="fa-solid fa-calendar"></i>
+            </div>
+        </a>
+        {% else %}
+        <div class="glass-card" style="padding: 30px; text-align: center; opacity: 0.6;">
+            Nenhum psicólogo disponível no momento.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Bottom Navigation -->
+<!-- <nav class="mobile-nav">
+    <a href="{{ url_for('user.inicio') }}" class="nav-item">
+        <i class="fa-solid fa-house"></i>
+        <span>Início</span>
+    </a>
+  
+    <a href="{{ url_for('user.desabafar') }}" class="nav-item">
+        <i class="fa-solid fa-pen"></i>
+        <span>Escrever</span>
+    </a>
+    <a href="{{ url_for('user.recursos') }}" class="nav-item">
+        <i class="fa-solid fa-book-open"></i>
+        <span>Recursos</span>
+    </a>
+    <a href="{{ url_for('user.perfil') }}" class="nav-item">
+        <i class="fa-solid fa-user"></i>
+        <span>Perfil</span>
+    </a>
+</nav> -->
+{% endblock %}

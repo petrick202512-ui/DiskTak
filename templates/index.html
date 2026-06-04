@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .splash-wrapper {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 20px;
+        background: linear-gradient(rgba(11, 21, 32, 0.8), rgba(11, 21, 32, 0.8)), url("{{ url_for('static', filename='img/bg_hero.png') }}");
+        background-size: cover;
+        background-position: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .logo-container {
+        width: 180px;
+        margin-bottom: 30px;
+        z-index: 2;
+    }
+
+    .logo-container img {
+        width: 100%;
+        filter: drop-shadow(var(--glow-green));
+    }
+
+    .emotional-text {
+        z-index: 2;
+        max-width: 300px;
+        margin-bottom: 50px;
+    }
+
+    .emotional-text h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: 15px;
+        color: var(--light-green);
+        line-height: 1.2;
+    }
+
+    .emotional-text p {
+        font-size: 1rem;
+        color: var(--cream);
+        opacity: 0.8;
+    }
+
+    .actions {
+        width: 100%;
+        max-width: 320px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        z-index: 2;
+    }
+
+    /* Partículas Animadas */
+    .particle {
+        position: absolute;
+        background: var(--light-green);
+        border-radius: 50%;
+        opacity: 0.3;
+        pointer-events: none;
+        animation: float 10s infinite linear;
+    }
+
+    @keyframes float {
+        0% { transform: translateY(100vh) scale(0); opacity: 0; }
+        50% { opacity: 0.5; }
+        100% { transform: translateY(-100px) scale(1.2); opacity: 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="splash-wrapper">
+    <!-- Partículas no background -->
+    <div id="particles"></div>
+
+    <div class="logo-container fade-in">
+        <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Disck Talk Logo">
+    </div>
+
+    <div class="emotional-text fade-in">
+        <h1>você não precisa estar bem para pedir ajuda.</h1>
+        <p>aqui, você será ouvido.</p>
+    </div>
+
+    <div class="actions fade-in" style="animation-delay: 0.3s;">
+        <a href="{{ url_for('auth.cadastro') }}?tipo=user" class="btn-primary">Quero ser ouvido</a>
+        <a href="{{ url_for('auth.cadastro') }}?tipo=psico" class="btn-secondary">Quero ajudar como psicólogo</a>
+    </div>
+
+    <p style="position: absolute; bottom: 30px; font-size: 0.8rem; opacity: 0.5; z-index: 2;">
+        <i class="fa-solid fa-heart" style="color: var(--soft-green); margin-right: 5px;"></i>
+        totalmente voluntário
+    </p>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function createParticles() {
+        const container = document.getElementById('particles');
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            const size = Math.random() * 4 + 2 + 'px';
+            particle.style.width = size;
+            particle.style.height = size;
+            particle.style.left = Math.random() * 100 + 'vw';
+            particle.style.animationDelay = Math.random() * 10 + 's';
+            particle.style.opacity = Math.random() * 0.5;
+            container.appendChild(particle);
+        }
+    }
+    createParticles();
+</script>
+{% endblock %}

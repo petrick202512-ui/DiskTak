@@ -1,0 +1,914 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .video-call-container {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        background: var(--primary-dark);
+        overflow: hidden;
+    }
+
+    .video-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.3);
+        z-index: 10;
+    }
+
+    .video-header h2 {
+        font-size: 1.1rem;
+        color: var(--cream);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .video-status {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.85rem;
+        color: #2ecc71;
+    }
+
+    .video-status::before {
+        content: '';
+        width: 8px;
+        height: 8px;
+        background: #2ecc71;
+        border-radius: 50%;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .video-content {
+        flex: 1;
+        display: flex;
+        gap: 10px;
+        padding: 10px;
+        overflow: hidden;
+    }
+
+    .remote-video-container {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 12px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .remote-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .psico-avatar-call {
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid var(--soft-green);
+        box-shadow: 0 0 30px rgba(109, 186, 171, 0.3);
+    }
+
+    .local-video-container {
+        width: 120px;
+        height: 180px;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 12px;
+        overflow: hidden;
+        position: relative;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .local-video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scaleX(-1);
+    }
+
+    .video-info-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+        padding: 15px;
+        text-align: center;
+    }
+
+    .psico-name-call {
+        color: var(--cream);
+        font-weight: 600;
+        font-size: 0.95rem;
+        margin-bottom: 5px;
+    }
+
+    .psico-specialty-call {
+        color: var(--soft-green);
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+
+    .call-duration {
+        color: var(--cream);
+        font-size: 0.85rem;
+        margin-top: 8px;
+        font-weight: 600;
+    }
+
+    .video-controls {
+        padding: 15px 20px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        background: rgba(0, 0, 0, 0.3);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .control-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    .control-btn.camera {
+        background: rgba(109, 186, 171, 0.2);
+        color: var(--soft-green);
+        border: 2px solid var(--soft-green);
+    }
+
+    .control-btn.camera:hover {
+        background: rgba(109, 186, 171, 0.4);
+    }
+
+    .control-btn.camera.disabled {
+        background: rgba(231, 76, 60, 0.3);
+        color: #e74c3c;
+        border-color: #e74c3c;
+    }
+
+    .control-btn.microphone {
+        background: rgba(155, 89, 182, 0.2);
+        color: #9b59b6;
+        border: 2px solid #9b59b6;
+    }
+
+    .control-btn.microphone:hover {
+        background: rgba(155, 89, 182, 0.4);
+    }
+
+    .control-btn.microphone.disabled {
+        background: rgba(231, 76, 60, 0.3);
+        color: #e74c3c;
+        border-color: #e74c3c;
+    }
+
+    .control-btn.hangup {
+        background: rgba(231, 76, 60, 0.8);
+        color: white;
+        border: none;
+        width: 60px;
+        height: 60px;
+    }
+
+    .control-btn.hangup:hover {
+        background: rgba(231, 76, 60, 1);
+        transform: scale(1.1);
+    }
+
+    .control-label {
+        font-size: 0.7rem;
+        color: var(--cream);
+        text-align: center;
+        margin-top: 5px;
+        opacity: 0.7;
+    }
+
+    .control-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .error-message {
+        background: rgba(231, 76, 60, 0.2);
+        border: 1px solid #e74c3c;
+        color: #e74c3c;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px;
+        text-align: center;
+    }
+
+    .call-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .call-info-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .call-info-right {
+        text-align: right;
+    }
+
+    .consultation-details {
+        font-size: 0.8rem;
+        color: var(--cream);
+        opacity: 0.7;
+    }
+
+    @media (max-width: 600px) {
+        .video-content {
+            flex-direction: column-reverse;
+        }
+
+        .local-video-container {
+            width: 100%;
+            height: 150px;
+        }
+
+        .remote-video-container {
+            min-height: 300px;
+        }
+
+        .control-btn {
+            width: 45px;
+            height: 45px;
+            font-size: 1rem;
+        }
+
+        .control-btn.hangup {
+            width: 55px;
+            height: 55px;
+        }
+    }
+
+    .chat-section {
+        display: none;
+    }
+
+    .chat-section.active {
+        display: flex;
+        flex-direction: column;
+        width: 250px;
+        background: rgba(0, 0, 0, 0.3);
+        border-left: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .chat-header {
+        padding: 10px 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--soft-green);
+    }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 10px 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .chat-message {
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        max-width: 90%;
+    }
+
+    .chat-message.yours {
+        background: rgba(109, 186, 171, 0.2);
+        color: var(--soft-green);
+        align-self: flex-end;
+        border-bottom-right-radius: 2px;
+    }
+
+    .chat-message.theirs {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--cream);
+        align-self: flex-start;
+        border-bottom-left-radius: 2px;
+    }
+
+    .chat-input-wrapper {
+        padding: 10px 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .chat-input-wrapper input {
+        width: 100%;
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+        color: var(--cream);
+        font-size: 0.85rem;
+    }
+
+    .chat-input-wrapper input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .timer {
+        font-size: 0.9rem;
+        color: var(--soft-green);
+        font-weight: 600;
+    }
+
+    @media (min-width: 1024px) {
+        .chat-section {
+            display: flex;
+        }
+
+        .video-content {
+            flex-direction: row;
+        }
+
+        .local-video-container {
+            width: 150px;
+            height: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="video-call-container" 
+     data-consulta-id="{{ consulta._id }}"
+     data-psico-id="{{ psico._id }}"
+     data-user-type="{{ usuario_tipo }}"
+     data-user-id="{{ session.user_id }}">
+    <!-- Header -->
+    <div class="video-header">
+        <div>
+            <h2>
+                <i class="fa-solid fa-video"></i>
+                {% if usuario_tipo == 'psico' %}
+                    Atendendo: {{ paciente.nome if paciente else 'Paciente' }}
+                {% else %}
+                    {{ psico.nome if psico else 'Psicólogo' }}
+                {% endif %}
+            </h2>
+            <div style="font-size: 0.8rem; color: var(--cream); opacity: 0.7; margin-top: 2px;">
+                {% if usuario_tipo == 'psico' %}
+                    Paciente em espera
+                {% else %}
+                    {{ psico.especialidade if psico else 'Consulta de Vídeo' }}
+                {% endif %}
+            </div>
+        </div>
+        <div style="text-align: right;">
+            <div class="video-status">
+                Chamada ativa
+            </div>
+            <div class="timer" id="callTimer">00:00</div>
+            <div style="font-size: 0.75rem; color: var(--cream); opacity: 0.6; margin-top: 3px;">
+                📅 {{ consulta.data_consulta if consulta.data_consulta is string else consulta.data_consulta.strftime('%d/%m/%Y') }}
+                • 🕒 {{ consulta.horario }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Video Content -->
+    <div class="video-content">
+        <!-- Remote Video (Psicólogo) -->
+        <div class="remote-video-container">
+            <video id="remoteVideo" class="remote-video" autoplay playsinline></video>
+            
+            <!-- Se não houver transmissão ao vivo, mostrar avatar -->
+            <div id="psycoAvatar" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px;">
+                <img src="{{ psico.avatar or 'https://i.pravatar.cc/300' }}" alt="{{ psico.nome }}" class="psico-avatar-call">
+                <div class="video-info-overlay">
+                    <div class="psico-name-call">{{ psico.nome if psico else 'Psicólogo' }}</div>
+                    <div class="psico-specialty-call">{{ psico.especialidade if psico else 'Especialista' }}</div>
+                    <div class="call-duration" id="callInfo">00:00 - Conectado</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Local Video (Usuário) -->
+        <div class="local-video-container">
+            <video id="localVideo" class="local-video" autoplay playsinline muted></video>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="video-controls">
+        <div class="control-wrapper">
+            <button class="control-btn camera" id="cameraBtn" title="Ligar/Desligar câmera">
+                <i class="fa-solid fa-video"></i>
+            </button>
+            <div class="control-label">Câmera</div>
+        </div>
+
+        <div class="control-wrapper">
+            <button class="control-btn microphone" id="microphoneBtn" title="Ligar/Desligar microfone">
+                <i class="fa-solid fa-microphone"></i>
+            </button>
+            <div class="control-label">Microfone</div>
+        </div>
+
+        <div class="control-wrapper">
+            <button class="control-btn hangup" id="hangupBtn" title="Encerrar chamada">
+                <i class="fa-solid fa-phone-slash"></i>
+            </button>
+            <div class="control-label">Encerrar</div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Fallback para showToast se não estiver definido em app.js
+if (typeof showToast === 'undefined') {
+    window.showToast = (message, type = 'info', duration = 3000) => {
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            padding: 14px 24px;
+            background: ${type === 'success' ? 'rgba(46, 204, 113, 0.2)' : type === 'error' ? 'rgba(231, 76, 60, 0.2)' : 'rgba(52, 152, 219, 0.2)'};
+            color: ${type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : '#3498db'};
+            font-weight: bold;
+            border-radius: 12px;
+            border: 1px solid ${type === 'success' ? '#2ecc7133' : type === 'error' ? '#e74c3c33' : '#3498db33'};
+            max-width: 80vw;
+            text-align: center;
+        `;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => toast.remove(), 300);
+        }, duration);
+    };
+}
+
+let localStream;
+let cameraEnabled = true;
+let microphoneEnabled = true;
+let callStartTime;
+let callTimerInterval;
+
+// Elementos
+const localVideo = document.getElementById('localVideo');
+const remoteVideo = document.getElementById('remoteVideo');
+const cameraBtn = document.getElementById('cameraBtn');
+const microphoneBtn = document.getElementById('microphoneBtn');
+const hangupBtn = document.getElementById('hangupBtn');
+const callTimer = document.getElementById('callTimer');
+const psycoAvatar = document.getElementById('psycoAvatar');
+
+// Inicializar câmera e microfone
+async function initializeMedia() {
+    try {
+        console.log('🎬 ============================================');
+        console.log('🎬 INICIANDO INICIALIZAÇÃO DE MÍDIA');
+        console.log('🎬 ============================================');
+        
+        // 1. Verificação de suporte básico
+        console.log('1️⃣ Verificando suporte do navegador...');
+        
+        // Checar navigator.mediaDevices (mais robusta)
+        const hasMediaDevices = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+        const hasGetUserMedia = !!(navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia);
+        
+        console.log('   ├─ navigator.mediaDevices:', navigator.mediaDevices ? '✅' : '❌');
+        console.log('   ├─ navigator.getUserMedia:', hasGetUserMedia ? '✅' : '❌');
+        console.log('   └─ getUserMedia disponível:', (hasMediaDevices || hasGetUserMedia) ? '✅' : '❌');
+        
+        if (!hasMediaDevices && !hasGetUserMedia) {
+            throw new Error('ERRO_SEM_SUPORTE: Seu navegador não suporta acesso a câmera/microfone. Use Chrome, Firefox, Safari ou Edge moderno.');
+        }
+
+        // 2. Verificação de contexto seguro
+        console.log('2️⃣ Verificando contexto seguro...');
+        const isSecure = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        const isSandboxed = window.self !== window.top;
+        
+        console.log('   ├─ HTTPS/Localhost:', isSecure ? '✅' : '❌');
+        console.log('   ├─ Em iframe:', isSandboxed ? '⚠️' : '✅');
+        console.log('   └─ URL atual:', window.location.href.substring(0, 50) + '...');
+        
+        if (!isSecure) {
+            console.warn('⚠️ AVISO: Usando HTTP. Alguns navegadores bloqueiam câmera em HTTP.');
+            showToast('⚠️ Use HTTPS ou localhost para melhor compatibilidade', 'info', 5000);
+        }
+
+        // 3. Detectar tipo de dispositivo
+        console.log('3️⃣ Detectando tipo de dispositivo...');
+        const ua = navigator.userAgent;
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+        const isIOS = /iPhone|iPad|iPod/.test(ua);
+        const isAndroid = /Android/.test(ua);
+        const isChrome = /Chrome/.test(ua);
+        const isSafari = /Safari/.test(ua) && !/Chrome/.test(ua);
+        const isFirefox = /Firefox/.test(ua);
+        
+        console.log('   ├─ Mobile:', isMobile ? '✅' : '❌');
+        console.log('   ├─ iOS:', isIOS ? '✅' : '❌');
+        console.log('   ├─ Android:', isAndroid ? '✅' : '❌');
+        console.log('   ├─ Chrome:', isChrome ? '✅' : '❌');
+        console.log('   ├─ Safari:', isSafari ? '✅' : '❌');
+        console.log('   └─ Firefox:', isFirefox ? '✅' : '❌');
+        
+        // 4. Preparar constraints
+        console.log('4️⃣ Preparando constraints de mídia...');
+        
+        let constraints;
+        if (isMobile) {
+            constraints = {
+                video: {
+                    facingMode: 'user',
+                    width: { max: 480 },
+                    height: { max: 360 }
+                },
+                audio: true
+            };
+            console.log('   └─ Usando constraints MOBILE (480x360 máximo)');
+        } else {
+            constraints = {
+                video: {
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: 'user'
+                },
+                audio: true
+            };
+            console.log('   └─ Usando constraints DESKTOP (1280x720 ideal)');
+        }
+        
+        // 5. Tentar obter stream
+        console.log('5️⃣ Solicitando acesso a câmera e microfone...');
+        console.log('   └─ Aguardando permissão do usuário...');
+        
+        localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        console.log('✅ SUCESSO! Stream obtido com sucesso!');
+        console.log('   ├─ Tracks de vídeo:', localStream.getVideoTracks().length);
+        console.log('   └─ Tracks de áudio:', localStream.getAudioTracks().length);
+
+        // 6. Atribuir ao elemento de vídeo
+        if (localVideo) {
+            localVideo.srcObject = localStream;
+            console.log('✅ Stream atribuído ao elemento vídeo');
+        }
+
+        // 7. Iniciar sistema
+        startCallTimer();
+        if (psycoAvatar) {
+            psycoAvatar.innerHTML = `<div style="color: var(--soft-green); font-size: 1.2rem; font-weight: 600;">✅ Conectado</div>`;
+        }
+        
+        console.log('🎬 ============================================');
+        console.log('🎬 INICIALIZAÇÃO COMPLETA COM SUCESSO!');
+        console.log('🎬 ============================================');
+
+    } catch (error) {
+        console.error('🎬 ============================================');
+        console.error('🎬 ERRO NA INICIALIZAÇÃO!');
+        console.error('🎬 ============================================');
+        console.error('❌ Detalhes do erro:');
+        console.error('   ├─ Nome:', error.name);
+        console.error('   ├─ Mensagem:', error.message);
+        console.error('   └─ Stack:', error.stack);
+        
+        // Fallback 1: Constraints flexíveis
+        if (error.name === 'OverconstrainedError') {
+            console.warn('⏭️ FALLBACK 1: Constraints muito rígidas...');
+            try {
+                localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+                console.log('✅ FALLBACK 1 funcionou!');
+                if (localVideo) localVideo.srcObject = localStream;
+                startCallTimer();
+                if (psycoAvatar) psycoAvatar.innerHTML = `<div style="color: var(--soft-green); font-size: 1.2rem; font-weight: 600;">✅ Conectado (reduzido)</div>`;
+                return;
+            } catch (e) { console.error('   └─ FALLBACK 1 falhou:', e.name); }
+        }
+        
+        // Fallback 2: Video true, audio true
+        console.warn('⏭️ FALLBACK 2: Tentando constraints genéricas...');
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            console.log('✅ FALLBACK 2 funcionou!');
+            if (localVideo) localVideo.srcObject = localStream;
+            startCallTimer();
+            if (psycoAvatar) psycoAvatar.innerHTML = `<div style="color: var(--soft-green); font-size: 1.2rem; font-weight: 600;">✅ Conectado</div>`;
+            return;
+        } catch (e) { console.error('   └─ FALLBACK 2 falhou:', e.name); }
+        
+        // Fallback 3: Apenas vídeo
+        console.warn('⏭️ FALLBACK 3: Tentando apenas vídeo...');
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            console.log('✅ FALLBACK 3 funcionou! (vídeo apenas)');
+            if (localVideo) localVideo.srcObject = localStream;
+            startCallTimer();
+            if (psycoAvatar) psycoAvatar.innerHTML = `<div style="color: var(--soft-green); font-size: 1.2rem; font-weight: 600;">✅ Conectado (vídeo)</div>`;
+            showToast('📹 Conectado apenas com vídeo', 'info', 3000);
+            return;
+        } catch (e) { console.error('   └─ FALLBACK 3 falhou:', e.name); }
+        
+        // Fallback 4: Apenas áudio
+        console.warn('⏭️ FALLBACK 4: Tentando apenas áudio...');
+        try {
+            localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            console.log('✅ FALLBACK 4 funcionou! (áudio apenas)');
+            showToast('🎤 Conectado apenas com áudio', 'info', 3000);
+            if (localVideo) localVideo.style.display = 'none';
+            startCallTimer();
+            if (psycoAvatar) psycoAvatar.innerHTML = `<div style="color: var(--soft-green); font-size: 1.2rem; font-weight: 600;">✅ Conectado (áudio)</div>`;
+            return;
+        } catch (e) { console.error('   └─ FALLBACK 4 falhou:', e.name); }
+        
+        // Nenhum fallback funcionou
+        console.error('❌ Todos os fallbacks falharam!');
+        
+        let errorMessage = '';
+        let errorDetails = '';
+        
+        if (error.name === 'NotAllowedError') {
+            errorMessage = '❌ Permissão Negada';
+            errorDetails = 'Você recusou o acesso. Clique no ícone de câmera/microfone na barra de endereço para permitir.';
+        } else if (error.name === 'NotFoundError') {
+            errorMessage = '❌ Dispositivo Não Encontrado';
+            errorDetails = 'Seu device não tem câmera ou microfone. Verifique as conexões.';
+        } else if (error.name === 'NotReadableError') {
+            errorMessage = '❌ Câmera em Uso';
+            errorDetails = 'Feche outros apps que usam câmera e tente novamente.';
+        } else if (error.name === 'SecurityError') {
+            errorMessage = '❌ Erro de Segurança';
+            errorDetails = 'Use HTTPS ou localhost. O navegador bloqueou por segurança.';
+        } else if (error.name === 'OverconstrainedError') {
+            errorMessage = '❌ Configuração Incompatível';
+            errorDetails = 'As configurações de câmera não funcionam neste dispositivo.';
+        } else if (error.name === 'TypeError') {
+            errorMessage = '❌ Erro Interno do Navegador';
+            errorDetails = 'Experimente: fechar outras abas, reiniciar o navegador ou usar outro navegador.';
+        } else {
+            errorMessage = '❌ Erro Desconhecido';
+            errorDetails = `${error.name}: ${error.message}`;
+        }
+        
+        console.error(`${errorMessage}: ${errorDetails}`);
+        showToast(`${errorMessage}\n${errorDetails}`, 'error', 7000);
+        
+        // Mostrar placeholder com instruções detalhadas
+        if (localVideo) {
+            localVideo.style.display = 'none';
+            const placeholder = document.createElement('div');
+            placeholder.style.cssText = `
+                display: flex; align-items: center; justify-content: center;
+                width: 100%; height: 100%; background: rgba(0,0,0,0.7);
+                color: var(--cream); text-align: center; padding: 20px;
+                border-radius: 12px; flex-direction: column; gap: 10px; font-size: 0.9rem;
+            `;
+            placeholder.innerHTML = `
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 2.5rem; color: #e74c3c;"></i>
+                <p style="font-weight: 600;">${errorMessage}</p>
+                <small style="opacity: 0.7; line-height: 1.4;">${errorDetails}</small>
+                <small style="opacity: 0.5; margin-top: 10px; border-top: 1px solid #e74c3c33; padding-top: 10px;">
+                    Você ainda pode usar apenas áudio. Tecle F12 para ver mais detalhes.
+                </small>
+            `;
+            localVideo.parentElement?.appendChild(placeholder);
+        }
+        
+        startCallTimer();
+        if (psycoAvatar) {
+            psycoAvatar.innerHTML = `<div style="color: #e74c3c; font-size: 1.2rem; font-weight: 600;">⚠️ Sem vídeo</div>`;
+        }
+        
+        console.log('🎬 ============================================');
+        console.error('Abra o console (F12) para mais detalhes.');
+        console.log('🎬 ============================================');
+    }
+}
+
+// Controlar câmera
+cameraBtn.addEventListener('click', () => {
+    if (localStream) {
+        localStream.getVideoTracks().forEach(track => {
+            track.enabled = !track.enabled;
+        });
+        cameraEnabled = !cameraEnabled;
+        
+        cameraBtn.classList.toggle('disabled', !cameraEnabled);
+        if (!cameraEnabled) {
+            cameraBtn.innerHTML = '<i class="fa-solid fa-video-slash"></i>';
+        } else {
+            cameraBtn.innerHTML = '<i class="fa-solid fa-video"></i>';
+        }
+    }
+});
+
+// Controlar microfone
+microphoneBtn.addEventListener('click', () => {
+    if (localStream) {
+        localStream.getAudioTracks().forEach(track => {
+            track.enabled = !track.enabled;
+        });
+        microphoneEnabled = !microphoneEnabled;
+        
+        microphoneBtn.classList.toggle('disabled', !microphoneEnabled);
+        if (!microphoneEnabled) {
+            microphoneBtn.innerHTML = '<i class="fa-solid fa-microphone-slash"></i>';
+        } else {
+            microphoneBtn.innerHTML = '<i class="fa-solid fa-microphone"></i>';
+        }
+    }
+});
+
+// Timer da chamada
+function startCallTimer() {
+    callStartTime = Date.now();
+    callTimerInterval = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        callTimer.textContent = 
+            String(minutes).padStart(2, '0') + ':' + 
+            String(seconds).padStart(2, '0');
+    }, 1000);
+}
+
+// Encerrar chamada
+hangupBtn.addEventListener('click', () => {
+    if (confirm('Tem certeza que deseja encerrar a chamada?')) {
+        endCall();
+    }
+});
+
+// Função para encerrar chamada
+function endCall() {
+    // Parar o timer
+    if (callTimerInterval) clearInterval(callTimerInterval);
+
+    // Parar todas as tracks
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+    }
+
+    // Redirecionar
+    setTimeout(() => {
+        window.location.href = '{{ url_for("user.recursos") }}';
+    }, 500);
+}
+
+// Encerrar chamada ao fechar aba
+window.addEventListener('beforeunload', () => {
+    if (localStream) {
+        localStream.getTracks().forEach(track => track.stop());
+    }
+});
+
+// Som de notificação
+function playNotificationSound() {
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (e) {
+        console.error('Erro ao reproduzir som:', e);
+    }
+}
+
+// Inicializar Socket.IO quando disponível
+function initializeSocket() {
+    // Verificar se Socket.IO está carregado
+    if (typeof io === 'undefined') {
+        console.warn('Socket.IO não está carregado, tentando novamente...');
+        setTimeout(initializeSocket, 500);
+        return;
+    }
+
+    const socket = io();
+
+    socket.on('connect', () => {
+        console.log('Conectado ao servidor Socket.IO');
+        
+        // Entrar na sala da consulta
+        socket.emit('entrar_sala_video', {
+            consulta_id: '{{ consulta._id }}'
+        });
+
+        // Se for paciente, notificar psicólogo que está chamando
+        {% if usuario_tipo == 'user' %}
+            socket.emit('iniciar_chamada', {
+                consulta_id: '{{ consulta._id }}',
+                psico_id: '{{ psico._id }}',
+                timestamp: new Date().toISOString()
+            });
+        {% endif %}
+    });
+
+    // Ouvir notificações de chamada aceita
+    socket.on('chamada_aceita', (data) => {
+        console.log('Psicólogo aceitou a chamada!');
+        if (psycoAvatar) {
+            psycoAvatar.innerHTML = `
+                <div style="color: var(--soft-green); font-size: 1.2rem; font-weight: 600;">
+                    ✅ Chamada conectada
+                </div>
+            `;
+        }
+    });
+
+    // Ouvir notificações de chamada rejeitada
+    socket.on('chamada_rejeitada', (data) => {
+        console.log('Psicólogo rejeitou a chamada:', data.motivo);
+        alert(data.motivo);
+        endCall();
+    });
+
+    // Ouvir se psicólogo recebeu notificação
+    {% if usuario_tipo == 'psico' %}
+        socket.on('chamada_recebida', (data) => {
+            console.log('Nova chamada recebida!', data);
+            playNotificationSound();
+        });
+    {% endif %}
+
+    socket.on('disconnect', () => {
+        console.log('Desconectado do servidor Socket.IO');
+    });
+
+    socket.on('error', (error) => {
+        console.error('Erro no Socket.IO:', error);
+    });
+}
+
+// Inicializar quando a página carregar
+document.addEventListener('DOMContentLoaded', () => {
+    initializeMedia();
+    // Aguardar um pouco para garantir que Socket.IO foi carregado
+    setTimeout(initializeSocket, 100);
+});
+
+// Permitir ESC para sair
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        if (confirm('Deseja encerrar a chamada?')) {
+            endCall();
+        }
+    }
+});
+</script>
+
+<!-- Socket.IO -->
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+
+<!-- WebRTC Handler -->
+<script src="{{ url_for('static', filename='js/webrtc-handler.js') }}"></script>
+
+<!-- Call Manager -->
+<script src="{{ url_for('static', filename='js/call-manager.js') }}"></script>
+
+{% endblock %}

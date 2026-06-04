@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .desabafo-wrapper {
+        padding: 40px 20px;
+    }
+
+    .desabafo-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .desabafo-header i {
+        font-size: 3rem;
+        color: var(--soft-green);
+        margin-bottom: 20px;
+        filter: drop-shadow(var(--glow-green));
+    }
+
+    .desabafo-header h2 {
+        font-size: 1.8rem;
+        color: var(--light-green);
+        margin-bottom: 10px;
+    }
+
+    .desabafo-header p {
+        opacity: 0.7;
+        font-size: 0.95rem;
+    }
+
+    .textarea-container {
+        margin-top: 30px;
+    }
+
+    textarea {
+        width: 100%;
+        height: 300px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 25px;
+        color: var(--cream);
+        font-size: 1.1rem;
+        line-height: 1.6;
+        resize: none;
+        outline: none;
+        transition: all 0.3s ease;
+    }
+
+    textarea:focus {
+        border-color: var(--soft-green);
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: var(--glow-green);
+    }
+
+    .privacy-note {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 15px;
+        font-size: 0.8rem;
+        opacity: 0.5;
+        justify-content: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="desabafo-wrapper">
+        <header class="desabafo-header fade-in">
+            <i class="fa-solid fa-feather-pointed"></i>
+            <h2>Escreva o que está sentindo</h2>
+            <p>Aqui você pode colocar tudo para fora. Nossos psicólogos voluntários vão ler e te responder com carinho.</p>
+        </header>
+
+        <form class="textarea-container fade-in" style="animation-delay: 0.2s;" action="{{ url_for('user.desabafar') }}" method="POST">
+            <textarea name="texto" placeholder="Comece a escrever..." required></textarea>
+            
+            <div class="privacy-note">
+                <i class="fa-solid fa-shield-halved"></i>
+                <span>Tudo aqui é sigiloso e seguro.</span>
+            </div>
+
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 30px;">Enviar desabafo</button>
+        </form>
+    </div>
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="mobile-nav">
+    <a href="{{ url_for('user.inicio') }}" class="nav-item">
+        <i class="fa-solid fa-house"></i>
+        <span>Início</span>
+    </a>
+    {% if session['user_type'] != 'psico' %}
+    <a href="{{ url_for('user.minhas_consultas') }}" class="nav-item ">
+        <i class="fa-solid fa-calendar-check"></i>
+        <span>Consultas</span>
+    </a>
+    {% endif %}
+    <a href="{{ url_for('user.desabafar') }}" class="nav-item active">
+        <i class="fa-solid fa-pen"></i>
+        <span>Escrever</span>
+    </a>
+    <a href="{{ url_for('user.recursos') }}" class="nav-item">
+        <i class="fa-solid fa-book-open"></i>
+        <span>Recursos</span>
+    </a>
+    <a href="{{ url_for('user.perfil') }}" class="nav-item">
+        <i class="fa-solid fa-user"></i>
+        <span>Perfil</span>
+    </a>
+</nav>
+{% endblock %}

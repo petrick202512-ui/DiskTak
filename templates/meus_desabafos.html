@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .desabafos-container {
+        padding: 20px;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .desabafos-header {
+        padding: 30px 20px 20px;
+        text-align: center;
+    }
+
+    .desabafos-header h2 {
+        font-size: 1.8rem;
+        color: var(--light-green);
+        margin-bottom: 8px;
+    }
+
+    .desabafos-header p {
+        font-size: 0.95rem;
+        opacity: 0.7;
+    }
+
+    .desabafo-item {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .desabafo-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--soft-green);
+    }
+
+    .desabafo-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        font-size: 0.85rem;
+        opacity: 0.7;
+    }
+
+    .desabafo-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-nao-lido {
+        background: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+    }
+
+    .status-respondido {
+        background: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+    }
+
+    .desabafo-texto {
+        color: var(--cream);
+        line-height: 1.6;
+        margin-bottom: 15px;
+        word-wrap: break-word;
+    }
+
+    .desabafo-resposta {
+        background: rgba(109, 186, 171, 0.1);
+        border-left: 3px solid var(--soft-green);
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+    }
+
+    .resposta-psico {
+        font-size: 0.9rem;
+        color: var(--soft-green);
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .resposta-texto {
+        color: var(--cream);
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: var(--soft-green);
+        opacity: 0.3;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        color: var(--cream);
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        opacity: 0.6;
+        margin-bottom: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="desabafos-container">
+        <header class="desabafos-header fade-in">
+            <h2>Meus Desabafos</h2>
+            <p>histórico de tudo que você compartilhou conosco.</p>
+        </header>
+
+        {% if desabafos %}
+            <div class="desabafo-list fade-in" style="animation-delay: 0.1s;">
+                {% for desabafo in desabafos %}
+                <div class="glass-card desabafo-item">
+                    <div class="desabafo-meta">
+                        <span>{{ desabafo.data_criacao.strftime('%d/%m/%Y às %H:%M') }}</span>
+                        <span class="desabafo-status {% if desabafo.status == 'respondido' %}status-respondido{% else %}status-nao-lido{% endif %}">
+                            {% if desabafo.status == 'respondido' %}✓ Respondido{% else %}Aguardando resposta{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="desabafo-texto">
+                        {{ desabafo.texto }}
+                    </div>
+
+                    {% if desabafo.status == 'respondido' and desabafo.resposta %}
+                    <div class="desabafo-resposta">
+                        <div class="resposta-psico">
+                            {% if desabafo.psico_id %}
+                                {% set psico = db.usuarios.find_one({"_id": desabafo.psico_id}) %}
+                                {{ psico.nome if psico else 'Psicólogo' }}
+                            {% endif %}
+                        </div>
+                        <div class="resposta-texto">
+                            {{ desabafo.resposta }}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state fade-in">
+                <i class="fa-solid fa-inbox"></i>
+                <h3>Nenhum desabafo ainda</h3>
+                <p>Comece a compartilhar o que você está sentindo.</p>
+                <a href="{{ url_for('user.desabafar') }}" class="btn-primary">Fazer um desabafo</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="mobile-nav">
+    <a href="{{ url_for('user.inicio') }}" class="nav-item">
+        <i class="fa-solid fa-house"></i>
+        <span>Início</span>
+    </a>
+    <a href="{{ url_for('user.psicologos') }}" class="nav-item">
+        <i class="fa-solid fa-comment-dots"></i>
+        <span>Conversar</span>
+    </a>
+    <a href="{{ url_for('chat.conversas') }}" class="nav-item">
+        <i class="fa-solid fa-messages"></i>
+        <span>Mensagens</span>
+    </a>
+    <a href="{{ url_for('user.perfil') }}" class="nav-item">
+        <i class="fa-solid fa-user"></i>
+        <span>Perfil</span>
+    </a>
+</nav>
+{% endblock %}

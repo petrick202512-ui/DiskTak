@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .rec-header {
+        padding: 40px 20px 20px;
+    }
+
+    .rec-tabs {
+        display: flex;
+        gap: 10px;
+        padding: 0 20px;
+        overflow-x: auto;
+        padding-bottom: 15px;
+        scrollbar-width: none;
+    }
+
+    .rec-tabs::-webkit-scrollbar { display: none; }
+
+    .rec-tab {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 8px 20px;
+        border-radius: 20px;
+        color: var(--cream);
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+
+    .rec-tab.active {
+        background: var(--teal);
+        border-color: var(--soft-green);
+    }
+
+    .rec-section {
+        padding: 20px;
+    }
+
+    .rec-section h3 {
+        font-size: 1.2rem;
+        color: var(--light-green);
+        margin-bottom: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .rec-section h3 span {
+        font-size: 0.8rem;
+        opacity: 0.5;
+        font-weight: 400;
+    }
+
+    .article-card {
+        display: flex;
+        gap: 15px;
+        padding: 15px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.3s ease;
+        position: relative;
+        align-items: center;
+    }
+
+    .article-card:hover {
+        background: rgba(109, 186, 171, 0.1);
+        border-color: var(--soft-green);
+        transform: translateY(-2px);
+    }
+
+    .article-img {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        background: var(--petroleum);
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: var(--soft-green);
+    }
+
+    .article-info h4 {
+        font-size: 1rem;
+        margin-bottom: 5px;
+        color: var(--cream);
+    }
+
+    .article-info p {
+        font-size: 0.8rem;
+        opacity: 0.6;
+        margin: 3px 0;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-top: 5px;
+    }
+
+    .status-agendada {
+        background: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+    }
+
+    .status-confirmada {
+        background: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    .empty-consultas {
+        text-align: center;
+        padding: 30px 20px;
+        opacity: 0.6;
+    }
+
+    .empty-consultas i {
+        font-size: 2.5rem;
+        color: var(--soft-green);
+        margin-bottom: 10px;
+    }
+
+    .empty-consultas p {
+        margin-bottom: 15px;
+    }
+
+    .btn-agendar-novo {
+        display: inline-block;
+        padding: 10px 24px;
+        background: linear-gradient(135deg, var(--soft-green), var(--teal));
+        color: var(--primary-dark);
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-agendar-novo:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(109, 186, 171, 0.3);
+    }
+
+    .exercise-card {
+        padding: 20px;
+        background: linear-gradient(135deg, rgba(109, 186, 171, 0.1) 0%, rgba(42, 107, 107, 0.1) 100%);
+        border: 1px solid rgba(109, 186, 171, 0.2);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .exercise-card:hover {
+        border-color: var(--soft-green);
+        background: linear-gradient(135deg, rgba(109, 186, 171, 0.2) 0%, rgba(42, 107, 107, 0.2) 100%);
+    }
+
+    .exercise-card h4 {
+        color: var(--cream);
+        margin: 0;
+    }
+
+    .exercise-card p {
+        color: var(--cream);
+        opacity: 0.7;
+    }
+
+    .consultas-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .glass-card.article-card {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 0;
+        margin-bottom: 0;
+    }
+
+    .glass-card.article-card:last-child {
+        border-bottom: none;
+        border-radius: 0 0 15px 15px;
+    }
+
+    .glass-card.article-card:first-child {
+        border-radius: 15px 15px 0 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <header class="rec-header fade-in">
+        <h2 style="font-size: 1.8rem; color: var(--light-green);">Recursos para você</h2>
+    </header>
+
+    <div class="rec-tabs fade-in" style="animation-delay: 0.1s;">
+
+    </div>
+
+    <!-- Seção de Consultas -->
+    <div class="rec-section fade-in" style="animation-delay: 0.2s;">
+        <h3>Consultas <span>{{ consultas|length }} agendadas</span></h3>
+        
+        {% if consultas|length > 0 %}
+            <div class="glass-card consultas-list">
+                {% for consulta in consultas %}
+                    {% set psico = consulta.psico %}
+                    <a href="{{ url_for('user.chamada_video', consulta_id=consulta._id) }}" class="article-card">
+                        <div class="article-img">
+                            <i class="fa-solid fa-video"></i>
+                        </div>
+                        <div class="article-info" style="flex: 1;">
+                            <h4>
+                                Consulta com: <br>
+                                <strong>{{ psico.nome if psico else 'Psicólogo' }}</strong>
+                            </h4>
+                            <p>
+                                📅 {{ consulta.data_consulta if consulta.data_consulta is string else consulta.data_consulta.strftime('%d/%m/%Y') }}
+                                • 🕒 {{ consulta.horario }}
+                            </p>
+                            <span class="status-badge status-{{ consulta.status }}">
+                                {{ '🔔 Agendada' if consulta.status == 'agendada' else '✅ Confirmada' }}
+                            </span>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-consultas">
+                <i class="fa-solid fa-calendar-plus"></i>
+                <p>Você ainda não tem consultas agendadas</p>
+                <a href="{{ url_for('user.psicologos') }}" class="btn-agendar-novo">
+                    <i class="fa-solid fa-plus"></i> Agendar Consulta
+                </a>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Seção de Exercícios -->
+    <div class="rec-section fade-in" style="animation-delay: 0.3s;">
+        <h3>Exercícios</h3>
+        <div class="exercise-card" onclick="window.location.href='/exercicio-respiracao'" style="cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(46, 204, 113, 0.1)'; this.style.borderColor='#2ecc71';" onmouseout="this.style.background='rgba(255, 255, 255, 0.05)'; this.style.borderColor='rgba(255, 255, 255, 0.1)';">
+            <div style="font-size: 2rem; color: var(--soft-green);"><i class="fa-solid fa-wind"></i></div>
+            <div style="flex: 1;">
+                <h4 style="margin-bottom: 2px;">Exercício de respiração</h4>
+                <p style="font-size: 0.8rem; opacity: 0.6;">Para acalmar a mente • 3 min</p>
+            </div>
+            <i class="fa-solid fa-circle-play" style="font-size: 1.5rem; color: var(--soft-green);"></i>
+        </div>
+
+        
+    </div>
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="mobile-nav">
+    {% if session.get('tipo') == 'psico' %}
+        <!-- Navbar para Psicólogos -->
+        <a href="{{ url_for('user.inicio') }}" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span>Início</span>
+        </a>
+        <a href="{{ url_for('user.recursos') }}" class="nav-item active">
+            <i class="fa-solid fa-book-open"></i>
+            <span>Recursos</span>
+        </a>
+        <a href="{{ url_for('user.perfil') }}" class="nav-item">
+            <i class="fa-solid fa-user"></i>
+            <span>Perfil</span>
+        </a>
+    {% else %}
+        <!-- Navbar para Pacientes -->
+        <a href="{{ url_for('user.inicio') }}" class="nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span>Início</span>
+        </a>
+        <a href="{{ url_for('user.minhas_consultas') }}" class="nav-item">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Consultas</span>
+        </a>
+        
+        <a href="{{ url_for('user.recursos') }}" class="nav-item active">
+            <i class="fa-solid fa-book-open"></i>
+            <span>Recursos</span>
+        </a>
+        <a href="{{ url_for('user.perfil') }}" class="nav-item">
+            <i class="fa-solid fa-user"></i>
+            <span>Perfil</span>
+        </a>
+    {% endif %}
+</nav>
+{% endblock %}

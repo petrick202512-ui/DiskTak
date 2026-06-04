@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .auth-wrapper {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 30px 20px;
+        background: linear-gradient(135deg, var(--primary-dark) 0%, var(--petroleum) 100%);
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .auth-header h2 {
+        font-size: 2rem;
+        color: var(--light-green);
+        margin-bottom: 10px;
+    }
+
+    .tabs-container {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 12px;
+        background: transparent;
+        border: none;
+        color: var(--cream);
+        font-weight: 600;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        transition: all 0.3s ease;
+        opacity: 0.6;
+    }
+
+    .tab-btn.active {
+        color: var(--soft-green);
+        border-bottom-color: var(--soft-green);
+        opacity: 1;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 0.85rem;
+        opacity: 0.8;
+        color: var(--cream);
+    }
+
+    .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .input-wrapper i {
+        position: absolute;
+        left: 15px;
+        color: var(--soft-green);
+    }
+
+    .input-wrapper input, .input-wrapper select {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 14px 15px 14px 45px;
+        border-radius: 15px;
+        color: var(--cream);
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .input-wrapper select {
+        appearance: none;
+        cursor: pointer;
+    }
+
+    .input-wrapper input:focus, .input-wrapper select:focus {
+        outline: none;
+        border-color: var(--soft-green);
+        background: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 0 15px rgba(109, 186, 171, 0.2);
+    }
+
+    .input-wrapper input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .form-hidden {
+        display: none;
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, var(--soft-green), var(--teal));
+        color: var(--primary-dark);
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-top: 10px;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(109, 186, 171, 0.3);
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 25px;
+        font-size: 0.9rem;
+        opacity: 0.7;
+    }
+
+    .auth-footer a {
+        color: var(--soft-green);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .info-box {
+        background: rgba(109, 186, 171, 0.1);
+        border: 1px solid rgba(109, 186, 171, 0.3);
+        border-radius: 10px;
+        padding: 12px;
+        margin-bottom: 20px;
+        font-size: 0.85rem;
+        color: var(--light-green);
+        display: none;
+    }
+
+    .info-box.show {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-header fade-in">
+        <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" style="width: 80px; margin-bottom: 20px;">
+        <h2>Criar conta</h2>
+        <p>comece sua jornada de acolhimento.</p>
+    </div>
+
+    <form class="glass-card fade-in" style="animation-delay: 0.1s;" action="{{ url_for('auth.cadastro') }}" method="POST">
+        <!-- Tabs para escolher tipo -->
+        <div class="tabs-container">
+            <button type="button" class="tab-btn active" onclick="trocarTipo('user', event)">
+                <i class="fa-solid fa-heart"></i> Quero ser ouvido
+            </button>
+            <button type="button" class="tab-btn" onclick="trocarTipo('psico', event)">
+                <i class="fa-solid fa-hand-holding-heart"></i> Sou Psicólogo
+            </button>
+        </div>
+
+        <!-- Campo oculto para tipo -->
+        <input type="hidden" name="tipo" id="tipo-input" value="user">
+
+        <!-- Info box -->
+        <div class="info-box" id="info-paciente">
+            <i class="fa-solid fa-circle-info"></i> Complete seus dados para criar sua conta
+        </div>
+        <div class="info-box" id="info-psico">
+            <i class="fa-solid fa-circle-info"></i> Insira seus dados profissionais para se cadastrar como psicólogo voluntário
+        </div>
+
+        <!-- Campos comuns -->
+        <div class="form-group">
+            <label>Nome Completo</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" name="nome" placeholder="Como quer ser chamado?" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>E-mail</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-envelope"></i>
+                <input type="email" name="email" placeholder="seu@email.com" required>
+            </div>
+        </div>
+
+        <!-- Campos específicos para psicólogos -->
+        <div id="campos-psico" class="form-hidden">
+            <div class="form-group">
+                <label>CRP (Conselho Regional de Psicologia)</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-id-card"></i>
+                    <input type="text" name="crp" placeholder="Ex: 06/123456" id="crp-input">
+                </div>
+                <small style="opacity: 0.6; font-size: 0.75rem;">Formato: XX/XXXXXX</small>
+            </div>
+
+            <div class="form-group">
+                <label>Especialidade</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-stethoscope"></i>
+                    <select name="especialidade" id="especialidade-input">
+                        <option value="">Selecione uma especialidade</option>
+                        <option value="Psicologia Clínica">Psicologia Clínica</option>
+                        <option value="Ansiedade e Stress">Ansiedade e Stress</option>
+                        <option value="Acolhimento e Luto">Acolhimento e Luto</option>
+                        <option value="Relacionamentos">Relacionamentos</option>
+                        <option value="Saúde Mental">Saúde Mental e Bem-estar</option>
+                        <option value="Autoestima">Autoestima</option>
+                        <option value="Traumas">Traumas</option>
+                        <option value="Terapia de Casal">Terapia de Casal</option>
+                        <option value="Terapia Familiar">Terapia Familiar</option>
+                        <option value="Outras">Outra</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Descrição Profissional</label>
+                <div class="input-wrapper" style="align-items: flex-start;">
+                    <i class="fa-solid fa-pen" style="top: 15px;"></i>
+                    <textarea name="descricao" id="descricao-input" placeholder="Conte um pouco sobre sua experiência e abordagem..." style="width: 100%; padding: 12px 15px 12px 45px; border-radius: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); color: var(--cream); font-size: 0.9rem; resize: vertical; min-height: 80px; font-family: inherit;" onfocus="this.style.borderColor='var(--soft-green)'; this.style.background='rgba(255, 255, 255, 0.08)';" onblur="this.style.borderColor='rgba(255, 255, 255, 0.1)'; this.style.background='rgba(255, 255, 255, 0.05)';"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Campos para pacientes -->
+        <div id="campos-paciente">
+            <div class="form-group">
+                <label>Telefone (opcional)</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-phone"></i>
+                    <input type="tel" name="telefone" placeholder="(11) 99999-9999">
+                </div>
+            </div>
+        </div>
+
+        <!-- Senha -->
+        <div class="form-group">
+            <label>Senha</label>
+            <div class="input-wrapper">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" name="senha" placeholder="Crie uma senha forte (mín. 6 caracteres)" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-primary">Cadastrar</button>
+    </form>
+
+    <div class="auth-footer fade-in" style="animation-delay: 0.2s;">
+        <p>Já tem uma conta? <a href="{{ url_for('auth.login') }}">Fazer login</a></p>
+    </div>
+</div>
+
+<script>
+    // Mostrar/esconder campos baseado no tipo
+    function trocarTipo(tipo, event) {
+        event.preventDefault();
+
+        // Atualizar input oculto
+        document.getElementById('tipo-input').value = tipo;
+
+        // Atualizar tabs ativas
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.closest('.tab-btn').classList.add('active');
+
+        // Mostrar/esconder campos
+        if (tipo === 'psico') {
+            document.getElementById('campos-psico').classList.remove('form-hidden');
+            document.getElementById('campos-paciente').classList.add('form-hidden');
+            document.getElementById('info-psico').classList.add('show');
+            document.getElementById('info-paciente').classList.remove('show');
+            
+            // Marcar campos como required
+            document.getElementById('crp-input').required = true;
+            document.getElementById('especialidade-input').required = true;
+            document.getElementById('descricao-input').required = true;
+        } else {
+            document.getElementById('campos-psico').classList.add('form-hidden');
+            document.getElementById('campos-paciente').classList.remove('form-hidden');
+            document.getElementById('info-psico').classList.remove('show');
+            document.getElementById('info-paciente').classList.add('show');
+            
+            // Remover required dos campos de psicólogo
+            document.getElementById('crp-input').required = false;
+            document.getElementById('especialidade-input').required = false;
+            document.getElementById('descricao-input').required = false;
+        }
+    }
+
+    // Validar formulário antes de enviar
+    function validarFormularioCadastro(event) {
+        const tipoInput = document.getElementById('tipo-input');
+        const tipo = tipoInput.value;
+
+        if (tipo === 'psico') {
+            const crp = document.getElementById('crp-input').value.trim();
+            const especialidade = document.getElementById('especialidade-input').value.trim();
+            const descricao = document.getElementById('descricao-input').value.trim();
+
+            if (!crp) {
+                event.preventDefault();
+                alert('❌ Por favor, insira seu número de CRP');
+                document.getElementById('crp-input').focus();
+                return false;
+            }
+
+            if (!especialidade) {
+                event.preventDefault();
+                alert('❌ Por favor, selecione sua especialidade');
+                document.getElementById('especialidade-input').focus();
+                return false;
+            }
+
+            if (!descricao || descricao.length < 10) {
+                event.preventDefault();
+                alert('❌ Por favor, escreva uma descrição com pelo menos 10 caracteres');
+                document.getElementById('descricao-input').focus();
+                return false;
+            }
+
+            console.log('✅ Dados do psicólogo capturados:', { crp, especialidade, descricao });
+        }
+
+        return true;
+    }
+
+    // Inicializar info box
+    document.addEventListener('DOMContentLoaded', function() {
+        // Detectar tipo na URL
+        const params = new URLSearchParams(window.location.search);
+        const tipoURL = params.get('tipo');
+        
+        if (tipoURL === 'psico') {
+            // Pre-selecionar psicólogo
+            const psicoBtnIndex = 1;
+            const botoes = document.querySelectorAll('.tab-btn');
+            botoes[psicoBtnIndex].click();
+        } else {
+            // Mostrar paciente por padrão
+            document.getElementById('info-paciente').classList.add('show');
+        }
+
+        // Adicionar validação ao formulário
+        const formulario = document.querySelector('form');
+        if (formulario) {
+            formulario.addEventListener('submit', validarFormularioCadastro);
+        }
+    });
+
+</script>
+{% endblock %}

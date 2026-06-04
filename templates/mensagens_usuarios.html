@@ -1,0 +1,584 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .messages-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .messages-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .messages-header h1 {
+        font-size: 2rem;
+        color: var(--light-green);
+        margin: 0;
+    }
+
+    .filter-badge {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        background: rgba(46, 204, 113, 0.1);
+        border: 1px solid rgba(46, 204, 113, 0.3);
+        color: #2ecc71;
+        font-size: 0.85rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .badge:hover {
+        background: rgba(46, 204, 113, 0.2);
+        border-color: #2ecc71;
+    }
+
+    .badge.active {
+        background: #2ecc71;
+        color: #0B1520;
+        border-color: #2ecc71;
+    }
+
+    .message-item {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .message-item:hover {
+        background: rgba(46, 204, 113, 0.1);
+        border-color: rgba(46, 204, 113, 0.5);
+        transform: translateX(5px);
+    }
+
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 12px;
+    }
+
+    .message-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--teal);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--cream);
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+
+    .user-info h4 {
+        margin: 0;
+        color: var(--cream);
+        font-size: 0.95rem;
+    }
+
+    .user-info p {
+        margin: 3px 0 0;
+        font-size: 0.75rem;
+        opacity: 0.6;
+    }
+
+    .message-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .status-badge.nao-lido {
+        background: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+        border: 1px solid rgba(231, 76, 60, 0.5);
+    }
+
+    .status-badge.lido {
+        background: rgba(241, 196, 15, 0.2);
+        color: #f39c12;
+        border: 1px solid rgba(241, 196, 15, 0.5);
+    }
+
+    .status-badge.respondido {
+        background: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+        border: 1px solid rgba(46, 204, 113, 0.5);
+    }
+
+    .message-content {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 12px;
+        border-radius: 8px;
+        border-left: 3px solid #2ecc71;
+        margin: 12px 0;
+    }
+
+    .message-content p {
+        margin: 0;
+        color: var(--cream);
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .message-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.8rem;
+        opacity: 0.6;
+        margin-top: 12px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .message-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-small {
+        padding: 6px 14px;
+        border-radius: 8px;
+        border: 1px solid rgba(46, 204, 113, 0.3);
+        background: rgba(46, 204, 113, 0.1);
+        color: #2ecc71;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+
+    .btn-small:hover {
+        background: rgba(46, 204, 113, 0.2);
+        border-color: #2ecc71;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: var(--soft-green);
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        color: var(--light-green);
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        opacity: 0.6;
+        color: var(--cream);
+    }
+
+    /* Modal de Resposta */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: var(--primary-dark);
+        border: 1px solid rgba(46, 204, 113, 0.3);
+        border-radius: 12px;
+        width: 100%;
+        max-width: 600px;
+        max-height: 90vh;
+        overflow-y: auto;
+        padding: 30px;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 15px;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        color: var(--light-green);
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        color: var(--cream);
+        font-size: 1.5rem;
+        cursor: pointer;
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+    }
+
+    .modal-close:hover {
+        opacity: 1;
+    }
+
+    .modal-section {
+        margin-bottom: 20px;
+    }
+
+    .modal-section label {
+        display: block;
+        color: var(--light-green);
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    .modal-section .value {
+        background: rgba(0, 0, 0, 0.2);
+        padding: 12px;
+        border-radius: 8px;
+        color: var(--cream);
+        border-left: 3px solid #2ecc71;
+        margin-bottom: 15px;
+        font-size: 0.9rem;
+        line-height: 1.5;
+    }
+
+    .modal-section textarea {
+        width: 100%;
+        height: 150px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(46, 204, 113, 0.3);
+        border-radius: 8px;
+        color: var(--cream);
+        padding: 12px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.9rem;
+        resize: vertical;
+        transition: all 0.3s ease;
+    }
+
+    .modal-section textarea:focus {
+        outline: none;
+        border-color: #2ecc71;
+        background: rgba(0, 0, 0, 0.4);
+        box-shadow: 0 0 10px rgba(46, 204, 113, 0.2);
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 25px;
+    }
+
+    .btn-primary {
+        flex: 1;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #2ecc71;
+        background: #2ecc71;
+        color: #0B1520;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        background: #27ae60;
+        border-color: #27ae60;
+    }
+
+    .btn-secondary {
+        flex: 1;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(46, 204, 113, 0.3);
+        background: rgba(46, 204, 113, 0.1);
+        color: #2ecc71;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+        background: rgba(46, 204, 113, 0.2);
+    }
+
+    @media (max-width: 600px) {
+        .messages-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .message-content p {
+            font-size: 0.85rem;
+        }
+
+        .modal-content {
+            padding: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="messages-container">
+    <!-- Header -->
+    <div class="messages-header">
+        <h1>📬 Mensagens dos Usuários</h1>
+        <div class="filter-badge">
+            <div class="badge active" onclick="filterMessages('todos')">Todos</div>
+            <div class="badge" onclick="filterMessages('nao-lido')">Não Lidos</div>
+            <div class="badge" onclick="filterMessages('respondido')">Respondidos</div>
+        </div>
+    </div>
+
+    <!-- Lista de Mensagens -->
+    <div id="messagesList"></div>
+
+    <!-- Estado Vazio -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+        <div class="empty-icon">📭</div>
+        <h3>Sem mensagens</h3>
+        <p>Não há mensagens para esta categoria</p>
+    </div>
+</div>
+
+<!-- Modal de Resposta -->
+<div class="modal-overlay" id="replyModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Responder Mensagem</h2>
+            <button class="modal-close" onclick="closeReplyModal()">×</button>
+        </div>
+
+        <div class="modal-section">
+            <label>Usuário:</label>
+            <div class="value" id="modalUserName"></div>
+        </div>
+
+        <div class="modal-section">
+            <label>Mensagem Original:</label>
+            <div class="value" id="modalMessageText"></div>
+        </div>
+
+        <div class="modal-section">
+            <label for="responseText">Sua Resposta:</label>
+            <textarea id="responseText" placeholder="Escreva uma resposta compassiva e útil..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-secondary" onclick="closeReplyModal()">Cancelar</button>
+            <button class="btn-primary" onclick="sendReply()">Enviar Resposta</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentMessageId = null;
+    let messagesData = [];
+    let currentFilter = 'todos';
+
+    // Carregar mensagens
+    async function loadMessages() {
+        try {
+            const response = await fetch('/api/mensagens-usuarios');
+            const data = await response.json();
+            messagesData = data.mensagens || [];
+            renderMessages();
+        } catch (error) {
+            console.error('Erro ao carregar mensagens:', error);
+            showToast('Erro ao carregar mensagens', 'error');
+        }
+    }
+
+    // Filtrar mensagens
+    function filterMessages(filter) {
+        currentFilter = filter;
+        
+        // Atualizar badges
+        document.querySelectorAll('.filter-badge .badge').forEach(badge => {
+            badge.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        renderMessages();
+    }
+
+    // Renderizar mensagens
+    function renderMessages() {
+        const messagesList = document.getElementById('messagesList');
+        const emptyState = document.getElementById('emptyState');
+        
+        let filtered = messagesData;
+        
+        if (currentFilter === 'nao-lido') {
+            filtered = messagesData.filter(m => m.status === 'nao_lido');
+        } else if (currentFilter === 'respondido') {
+            filtered = messagesData.filter(m => m.status === 'respondido');
+        }
+        
+        if (filtered.length === 0) {
+            messagesList.innerHTML = '';
+            emptyState.style.display = 'block';
+            return;
+        }
+        
+        emptyState.style.display = 'none';
+        messagesList.innerHTML = filtered.map(msg => `
+            <div class="message-item">
+                <div class="message-header">
+                    <div class="message-user">
+                        <div class="user-avatar">${msg.usuario_nome[0].toUpperCase()}</div>
+                        <div class="user-info">
+                            <h4>${msg.usuario_nome}</h4>
+                            <p>${msg.usuario_email}</p>
+                        </div>
+                    </div>
+                    <div class="message-status">
+                        <span class="status-badge ${msg.status.replace('_', '-')}">${getStatusLabel(msg.status)}</span>
+                    </div>
+                </div>
+                
+                <div class="message-content">
+                    <p>${msg.texto}</p>
+                </div>
+                
+                <div class="message-footer">
+                    <span>${formatDate(msg.data_criacao)}</span>
+                    ${msg.status !== 'respondido' ? `
+                        <div class="message-actions">
+                            <button class="btn-small" onclick="openReplyModal('${msg._id}', '${msg.usuario_nome}', '${escapeSingleQuote(msg.texto)}')">Responder</button>
+                        </div>
+                    ` : `
+                        <div class="message-actions">
+                            <button class="btn-small" onclick="alert('Resposta: ${escapeSingleQuote(msg.resposta)}')">Ver Resposta</button>
+                        </div>
+                    `}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Abrir modal de resposta
+    function openReplyModal(messageId, userName, messageText) {
+        currentMessageId = messageId;
+        document.getElementById('modalUserName').textContent = userName;
+        document.getElementById('modalMessageText').textContent = messageText;
+        document.getElementById('responseText').value = '';
+        document.getElementById('replyModal').classList.add('active');
+    }
+
+    // Fechar modal
+    function closeReplyModal() {
+        document.getElementById('replyModal').classList.remove('active');
+    }
+
+    // Enviar resposta
+    async function sendReply() {
+        const responseText = document.getElementById('responseText').value.trim();
+        
+        if (!responseText) {
+            showToast('Escreva uma resposta', 'warning');
+            return;
+        }
+        
+        try {
+            const response = await fetch('/api/responder-mensagem', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message_id: currentMessageId,
+                    resposta: responseText
+                })
+            });
+            
+            if (response.ok) {
+                showToast('Resposta enviada com sucesso!', 'success');
+                closeReplyModal();
+                loadMessages();
+            } else {
+                showToast('Erro ao enviar resposta', 'error');
+            }
+        } catch (error) {
+            console.error('Erro:', error);
+            showToast('Erro ao enviar resposta', 'error');
+        }
+    }
+
+    // Utility functions
+    function getStatusLabel(status) {
+        const labels = {
+            'nao_lido': 'Não Lido',
+            'lido': 'Lido',
+            'respondido': 'Respondido'
+        };
+        return labels[status] || status;
+    }
+
+    function formatDate(date) {
+        if (!date) return '';
+        const d = new Date(date);
+        return d.toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    function escapeSingleQuote(text) {
+        return text.replace(/'/g, "\\'");
+    }
+
+    // Carregar mensagens ao abrir a página
+    document.addEventListener('DOMContentLoaded', loadMessages);
+</script>
+{% endblock %}

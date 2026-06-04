@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .conv-header {
+        padding: 40px 20px 20px;
+    }
+
+    .conv-tabs {
+        display: flex;
+        padding: 0 20px;
+        gap: 20px;
+        border-bottom: 1px solid var(--glass-border);
+        margin-bottom: 20px;
+    }
+
+    .tab-item {
+        padding-bottom: 12px;
+        color: var(--cream);
+        opacity: 0.5;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95rem;
+        position: relative;
+    }
+
+    .tab-item.active {
+        opacity: 1;
+    }
+
+    .tab-item.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: var(--soft-green);
+    }
+
+    .conversations-list {
+        padding: 0 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .conv-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        text-decoration: none;
+        color: var(--cream);
+    }
+
+    .conv-avatar {
+        width: 55px;
+        height: 55px;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .conv-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .conv-details {
+        flex: 1;
+    }
+
+    .conv-details h4 {
+        margin-bottom: 4px;
+        font-size: 1rem;
+    }
+
+    .conv-details p {
+        font-size: 0.85rem;
+        opacity: 0.6;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 200px;
+    }
+
+    .conv-meta {
+        text-align: right;
+    }
+
+    .conv-time {
+        font-size: 0.75rem;
+        opacity: 0.4;
+        display: block;
+        margin-bottom: 5px;
+    }
+
+    .unread-badge {
+        width: 8px;
+        height: 8px;
+        background: var(--soft-green);
+        border-radius: 50%;
+        display: inline-block;
+        box-shadow: var(--glow-green);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <header class="conv-header fade-in">
+        <h2 style="font-size: 1.8rem; color: var(--light-green);">Conversas</h2>
+    </header>
+
+    <div class="conv-tabs fade-in" style="animation-delay: 0.1s;">
+        <a href="#" class="tab-item active">Em andamento</a>
+        <a href="#" class="tab-item">Encerradas</a>
+    </div>
+
+    <div class="conversations-list">
+        {% for conv in conversas %}
+        <a href="{{ url_for('chat.chat', id=conv.outro._id) }}" class="glass-card conv-card fade-in" style="animation-delay: {{ loop.index0 * 0.1 }}s;">
+            <div class="conv-avatar">
+                <img src="{{ conv.outro.avatar or 'https://i.pravatar.cc/150' }}" alt="{{ conv.outro.nome }}">
+            </div>
+            <div class="conv-details">
+                <h4>{{ conv.outro.nome }}</h4>
+                <p>{{ conv.ultima_mensagem or 'Conversa iniciada' }}</p>
+            </div>
+            <div class="conv-meta">
+                <span class="conv-time">{{ conv.data_inicio.strftime('%H:%M') }}</span>
+                {% if conv.unread %}<span class="unread-badge"></span>{% endif %}
+            </div>
+        </a>
+        {% else %}
+        <div class="glass-card" style="padding: 30px; text-align: center; opacity: 0.6;">
+            Você ainda não iniciou nenhuma conversa.
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="mobile-nav">
+    <a href="{{ url_for('user.inicio') }}" class="nav-item">
+        <i class="fa-solid fa-house"></i>
+        <span>Início</span>
+    </a>
+    <a href="{{ url_for('chat.conversas') }}" class="nav-item active">
+        <i class="fa-solid fa-message"></i>
+        <span>Conversas</span>
+    </a>
+    <a href="{{ url_for('user.desabafar') }}" class="nav-item">
+        <i class="fa-solid fa-pen"></i>
+        <span>Escrever</span>
+    </a>
+    <a href="{{ url_for('user.recursos') }}" class="nav-item">
+        <i class="fa-solid fa-book-open"></i>
+        <span>Recursos</span>
+    </a>
+    <a href="{{ url_for('user.perfil') }}" class="nav-item">
+        <i class="fa-solid fa-user"></i>
+        <span>Perfil</span>
+    </a>
+</nav>
+{% endblock %}

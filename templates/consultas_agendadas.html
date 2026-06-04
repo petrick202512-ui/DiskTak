@@ -1,0 +1,478 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .consultas-header {
+        padding: 40px 20px 20px;
+    }
+
+    .consultas-header h2 {
+        font-size: 1.8rem;
+        color: var(--light-green);
+        margin-bottom: 8px;
+    }
+
+    .consultas-header p {
+        font-size: 0.95rem;
+        opacity: 0.7;
+    }
+
+    .status-filters {
+        display: flex;
+        gap: 10px;
+        padding: 0 20px;
+        margin-bottom: 20px;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .status-filters::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-btn {
+        padding: 8px 16px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--cream);
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .filter-btn.active {
+        background: var(--soft-green);
+        color: var(--primary-dark);
+        border-color: var(--soft-green);
+    }
+
+    .filter-btn:hover {
+        border-color: var(--soft-green);
+    }
+
+    .consultas-section {
+        padding: 20px;
+    }
+
+    .consulta-card-psico {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .consulta-card-psico:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--soft-green);
+        transform: translateY(-2px);
+    }
+
+    .consulta-header-psico {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .paciente-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .paciente-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--soft-green);
+    }
+
+    .paciente-details h3 {
+        color: var(--cream);
+        font-size: 1.05rem;
+        margin: 0 0 3px 0;
+    }
+
+    .paciente-details p {
+        color: var(--cream);
+        opacity: 0.6;
+        font-size: 0.85rem;
+        margin: 0;
+    }
+
+    .consulta-status-badge {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-agendada {
+        background: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+    }
+
+    .status-confirmada {
+        background: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+    }
+
+    .status-realizada {
+        background: rgba(155, 89, 182, 0.2);
+        color: #9b59b6;
+    }
+
+    .status-cancelada {
+        background: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+    }
+
+    .consulta-details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .detail-item i {
+        color: var(--soft-green);
+        font-size: 1.1rem;
+    }
+
+    .detail-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .detail-label {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .detail-value {
+        color: var(--cream);
+        font-size: 0.95rem;
+    }
+
+    .consulta-motivo {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    .motivo-label {
+        color: var(--soft-green);
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+    .motivo-text {
+        color: var(--cream);
+        font-size: 0.9rem;
+        line-height: 1.4;
+        opacity: 0.9;
+    }
+
+    .consulta-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-action-psico {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-atender {
+        background: linear-gradient(135deg, var(--soft-green), var(--teal));
+        color: var(--primary-dark);
+    }
+
+    .btn-atender:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(109, 186, 171, 0.3);
+    }
+
+    .btn-rejeitar {
+        background: rgba(231, 76, 60, 0.2);
+        color: #e74c3c;
+        border: 1px solid #e74c3c;
+    }
+
+    .btn-rejeitar:hover {
+        background: rgba(231, 76, 60, 0.3);
+    }
+
+    .btn-confirmar-consulta {
+        background: rgba(46, 204, 113, 0.2);
+        color: #2ecc71;
+        border: 1px solid #2ecc71;
+    }
+
+    .btn-confirmar-consulta:hover {
+        background: rgba(46, 204, 113, 0.3);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        color: var(--soft-green);
+        opacity: 0.5;
+        margin-bottom: 15px;
+    }
+
+    .empty-state h3 {
+        color: var(--cream);
+        margin-bottom: 10px;
+        font-size: 1.2rem;
+    }
+
+    .empty-state p {
+        color: var(--cream);
+        opacity: 0.6;
+    }
+
+    .notification-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(52, 152, 219, 0.2);
+        color: #3498db;
+        padding: 4px 10px;
+        border-radius: 15px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .notification-badge i {
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .consulta-details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .consulta-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <header class="consultas-header fade-in">
+        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 20px;">
+            <div>
+                <h2>Suas Consultas Agendadas</h2>
+                <p>Gerencie suas consultas e atenda os pacientes</p>
+            </div>
+            <a href="/mensagens-usuarios" style="padding: 10px 20px; background: rgba(46, 204, 113, 0.2); border: 1px solid #2ecc71; color: #2ecc71; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; display: flex; align-items: center; gap: 8px;" onmouseover="this.style.background='rgba(46, 204, 113, 0.3)'" onmouseout="this.style.background='rgba(46, 204, 113, 0.2)'">
+                <i class="fa-solid fa-envelope"></i>
+                Mensagens dos Usuários
+            </a>
+        </div>
+    </header>
+
+    <div class="status-filters fade-in" style="animation-delay: 0.1s;">
+        <button class="filter-btn active" onclick="filterByStatus('todos')">Todas</button>
+        <button class="filter-btn" onclick="filterByStatus('agendada')">
+            <i class="fa-solid fa-calendar"></i> Agendadas
+        </button>
+        <button class="filter-btn" onclick="filterByStatus('confirmada')">
+            <i class="fa-solid fa-check"></i> Confirmadas
+        </button>
+        <button class="filter-btn" onclick="filterByStatus('realizada')">
+            <i class="fa-solid fa-handshake"></i> Realizadas
+        </button>
+    </div>
+
+    <div class="consultas-section fade-in" style="animation-delay: 0.2s;">
+        {% if consultas|length > 0 %}
+            <div class="consultas-list">
+                {% for consulta in consultas %}
+                    <div class="glass-card consulta-card-psico" data-status="{{ consulta.status }}">
+                        <!-- Header da Consulta -->
+                        <div class="consulta-header-psico">
+                            <div class="paciente-info">
+                                <img src="{{ consulta.paciente.avatar or 'https://i.pravatar.cc/150' }}" 
+                                     alt="{{ consulta.paciente.nome if consulta.paciente else 'Paciente' }}" 
+                                     class="paciente-avatar">
+                                <div class="paciente-details">
+                                    <h3>{{ consulta.paciente.nome if consulta.paciente else 'Paciente' }}</h3>
+                                    <p>📧 {{ consulta.paciente.email if consulta.paciente else 'email@exemplo.com' }}</p>
+                                </div>
+                            </div>
+                            <span class="consulta-status-badge status-{{ consulta.status }}">
+                                {% if consulta.status == 'agendada' %}
+                                    🔔 Agendada
+                                {% elif consulta.status == 'confirmada' %}
+                                    ✅ Confirmada
+                                {% elif consulta.status == 'realizada' %}
+                                    ✔️ Realizada
+                                {% else %}
+                                    ❌ Cancelada
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <!-- Detalhes da Consulta -->
+                        <div class="consulta-details-grid">
+                            <div class="detail-item">
+                                <i class="fa-solid fa-calendar-days"></i>
+                                <div class="detail-text">
+                                    <span class="detail-label">Data</span>
+                                    <span class="detail-value">
+                                        {% if consulta.data_consulta is string %}
+                                            {{ consulta.data_consulta }}
+                                        {% else %}
+                                            {{ consulta.data_consulta.strftime('%d/%m/%Y') if consulta.data_consulta else 'N/A' }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="detail-item">
+                                <i class="fa-solid fa-clock"></i>
+                                <div class="detail-text">
+                                    <span class="detail-label">Horário</span>
+                                    <span class="detail-value">{{ consulta.horario }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Motivo da Consulta -->
+                        {% if consulta.descricao %}
+                        <div class="consulta-motivo">
+                            <div class="motivo-label">Motivo da Consulta</div>
+                            <div class="motivo-text">{{ consulta.descricao }}</div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Ações -->
+                        <div class="consulta-actions">
+                            {% if consulta.status == 'agendada' %}
+                                <button class="btn-action-psico btn-atender" onclick="atenderConsulta('{{ consulta._id }}')">
+                                    <i class="fa-solid fa-phone"></i> Atender Agora
+                                </button>
+                                <button class="btn-action-psico btn-confirmar-consulta" onclick="confirmarConsulta('{{ consulta._id }}')">
+                                    <i class="fa-solid fa-check"></i> Confirmar
+                                </button>
+                            {% elif consulta.status == 'confirmada' %}
+                                <button class="btn-action-psico btn-atender" onclick="atenderConsulta('{{ consulta._id }}')">
+                                    <i class="fa-solid fa-phone"></i> Atender Chamada
+                                </button>
+                            {% elif consulta.status == 'realizada' %}
+                                <div style="width: 100%; text-align: center; color: #2ecc71; font-weight: 600; padding: 12px;">
+                                    <i class="fa-solid fa-check-circle"></i> Consulta Realizada
+                                </div>
+                            {% else %}
+                                <div style="width: 100%; text-align: center; color: #e74c3c; font-weight: 600; padding: 12px;">
+                                    <i class="fa-solid fa-times-circle"></i> Consulta Cancelada
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fa-solid fa-calendar-check"></i>
+                <h3>Nenhuma consulta agendada</h3>
+                <p>Você ainda não tem consultas agendadas. Aguarde seus pacientes agendarem!</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Bottom Navigation -->
+<nav class="mobile-nav">
+    <a href="{{ url_for('user.inicio') }}" class="nav-item active">
+        <i class="fa-solid fa-house"></i>
+        <span>Início</span>
+    </a>
+    {% if session['user_type'] != 'psico' %}
+    <a href="{{ url_for('user.minhas_consultas') }}" class="nav-item">
+        <i class="fa-solid fa-calendar-check"></i>
+        <span>Consultas</span>
+    </a>
+    {% endif %}
+
+    <a href="{{ url_for('user.recursos') }}" class="nav-item">
+        <i class="fa-solid fa-book-open"></i>
+        <span>Recursos</span>
+    </a>
+    <a href="{{ url_for('user.perfil') }}" class="nav-item">
+        <i class="fa-solid fa-user"></i>
+        <span>Perfil</span>
+    </a>
+</nav>
+
+<script>
+function filterByStatus(status) {
+    const cards = document.querySelectorAll('[data-status]');
+    const buttons = document.querySelectorAll('.filter-btn');
+
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    cards.forEach(card => {
+        if (status === 'todos' || card.dataset.status === status) {
+            card.style.display = '';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function atenderConsulta(consultaId) {
+    window.location.href = `{{ url_for('user.chamada_video', consulta_id='CONSULTA_ID') }}`.replace('CONSULTA_ID', consultaId);
+}
+
+function confirmarConsulta(consultaId) {
+    if (confirm('Deseja confirmar esta consulta?')) {
+        alert('Consulta confirmada! (Integração futura)');
+    }
+}
+</script>
+{% endblock %}

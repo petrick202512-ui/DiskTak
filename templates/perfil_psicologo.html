@@ -1,0 +1,781 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .perfil-psicologo-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .perfil-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 30px 20px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .perfil-avatar-grande {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        margin-bottom: 15px;
+        border: 3px solid var(--soft-green);
+        object-fit: cover;
+        box-shadow: 0 4px 15px rgba(109, 186, 171, 0.2);
+    }
+
+    .perfil-header h2 {
+        font-size: 1.8rem;
+        color: var(--cream);
+        margin: 10px 0 5px 0;
+    }
+
+    .perfil-header p {
+        color: var(--soft-green);
+        font-size: 0.95rem;
+        margin: 5px 0;
+    }
+
+    .status-online {
+        display: inline-block;
+        background: #2ecc71;
+        color: white;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        margin-top: 10px;
+    }
+
+    .rating-section {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 15px;
+        padding: 15px;
+        background: rgba(109, 186, 171, 0.1);
+        border-radius: 12px;
+    }
+
+    .stars {
+        color: #f1c40f;
+        font-size: 1.2rem;
+    }
+
+    .rating-text {
+        color: var(--cream);
+        font-size: 0.95rem;
+    }
+
+    .perfil-info {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        color: var(--soft-green);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .info-value {
+        color: var(--cream);
+        font-size: 0.9rem;
+    }
+
+    .descricao-section {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .descricao-section h3 {
+        color: var(--soft-green);
+        margin-bottom: 12px;
+        font-size: 1rem;
+    }
+
+    .descricao-section p {
+        color: var(--cream);
+        line-height: 1.6;
+        opacity: 0.9;
+    }
+
+    .btn-agendar {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, var(--soft-green), var(--teal));
+        color: var(--primary-dark);
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 15px;
+    }
+
+    .btn-agendar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(109, 186, 171, 0.3);
+    }
+
+    .btn-voltar {
+        width: 100%;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--cream);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        font-size: 0.95rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-voltar:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background: var(--primary-dark);
+        border-radius: 15px;
+        padding: 30px;
+        width: 90%;
+        max-width: 500px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .modal-header h2 {
+        color: var(--soft-green);
+        font-size: 1.5rem;
+    }
+
+    .close-modal {
+        background: none;
+        border: none;
+        color: var(--cream);
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: color 0.3s ease;
+    }
+
+    .close-modal:hover {
+        color: var(--soft-green);
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        color: var(--soft-green);
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: var(--cream);
+        font-size: 0.9rem;
+        font-family: inherit;
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--soft-green);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .btn-confirmar {
+        flex: 1;
+        padding: 12px;
+        background: linear-gradient(135deg, var(--soft-green), var(--teal));
+        color: var(--primary-dark);
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-confirmar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(109, 186, 171, 0.3);
+    }
+
+    .btn-cancelar {
+        flex: 1;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--cream);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cancelar:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .avaliacoes-section {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .avaliacoes-section h3 {
+        color: var(--soft-green);
+        margin-bottom: 15px;
+        font-size: 1rem;
+    }
+
+    .avaliacao-card {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+    }
+
+    .avaliacao-card:last-child {
+        margin-bottom: 0;
+    }
+
+    .avaliacao-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .avaliacao-autor {
+        color: var(--soft-green);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .avaliacao-nota {
+        color: #f1c40f;
+        font-size: 0.85rem;
+    }
+
+    .avaliacao-texto {
+        color: var(--cream);
+        opacity: 0.8;
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+
+    .sem-avaliacoes {
+        text-align: center;
+        color: var(--cream);
+        opacity: 0.6;
+        padding: 20px;
+        font-size: 0.9rem;
+    }
+
+    .psico-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .detail-card {
+        background: rgba(109, 186, 171, 0.08);
+        border: 1px solid rgba(109, 186, 171, 0.2);
+        border-radius: 10px;
+        padding: 15px;
+        text-align: center;
+    }
+
+    .detail-icon {
+        font-size: 1.5rem;
+        color: var(--soft-green);
+        margin-bottom: 8px;
+    }
+
+    .detail-label {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.8rem;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .detail-value {
+        color: var(--cream);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    .star-rating {
+        display: flex;
+        gap: 10px;
+        font-size: 2rem;
+        margin-bottom: 15px;
+    }
+
+    .star-rating i {
+        cursor: pointer;
+        color: #ddd;
+        transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .star-rating i:hover,
+    .star-rating i.active {
+        color: #f39c12;
+        transform: scale(1.2);
+    }
+
+    .rating-input {
+        display: none;
+    }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--soft-green);
+        text-decoration: none;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+        gap: 12px;
+    }
+
+    @media (max-width: 600px) {
+        .perfil-psicologo-container {
+            padding: 10px;
+        }
+
+        .perfil-header {
+            padding: 20px 10px;
+        }
+
+        .modal-content {
+            width: 95%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <div class="perfil-psicologo-container fade-in">
+        <!-- Botão voltar -->
+        <a href="{{ url_for('user.psicologos') }}" class="back-btn">
+            <i class="fa-solid fa-arrow-left"></i>
+            Voltar
+        </a>
+
+        <!-- Header do Perfil -->
+        <div class="glass-card perfil-header">
+            <img src="{{ psico.avatar or 'https://i.pravatar.cc/150' }}" alt="{{ psico.nome }}" class="perfil-avatar-grande">
+            <h2>{{ psico.nome }}</h2>
+            <p>{{ psico.especialidade or 'Psicólogo Voluntário' }}</p>
+
+            {% if psico.get('status') == 'online' %}
+            <span class="status-online">
+                <i class="fa-solid fa-circle" style="color: #2ecc71; font-size: 0.6rem;"></i> Online agora
+            </span>
+            {% endif %}
+
+            {% if media_avaliacoes > 0 %}
+            <div class="rating-section">
+                <div class="stars">
+                    {% for i in range(5) %}
+                        {% if i < media_avaliacoes|int %}
+                            <i class="fa-solid fa-star"></i>
+                        {% elif i < media_avaliacoes %}
+                            <i class="fa-solid fa-star-half-stroke"></i>
+                        {% else %}
+                            <i class="fa-regular fa-star"></i>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="rating-text">
+                    <strong>{{ "%.1f"|format(media_avaliacoes) }}</strong> ({{ avaliacoes|length }} avaliações)
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Detalhes em cards -->
+            <div class="psico-details">
+                {% if psico.get('crp') %}
+                <div class="detail-card">
+                    <div class="detail-icon">🏆</div>
+                    <div class="detail-label">CRP</div>
+                    <div class="detail-value">{{ psico.crp }}</div>
+                </div>
+                {% endif %}
+
+                {% if psico.get('especialidade') %}
+                <div class="detail-card">
+                    <div class="detail-icon">🎓</div>
+                    <div class="detail-label">Especialidade</div>
+                    <div class="detail-value">{{ psico.especialidade }}</div>
+                </div>
+                {% endif %}
+
+                {% if psico.get('data_cadastro') %}
+                <div class="detail-card">
+                    <div class="detail-icon">📅</div>
+                    <div class="detail-label">Membro desde</div>
+                    <div class="detail-value">
+                        {% if psico.data_cadastro is string %}
+                            {{ psico.data_cadastro }}
+                        {% else %}
+                            {{ psico.data_cadastro.strftime('%d/%m/%Y') }}
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if psico.get('email') %}
+                <div class="detail-card">
+                    <div class="detail-icon">📧</div>
+                    <div class="detail-label">Email</div>
+                    <div class="detail-value">{{ psico.email }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Descrição / Sobre -->
+        {% if psico.get('descricao') %}
+        <div class="glass-card descricao-section">
+            <h3><i class="fa-solid fa-quote-left"></i> Sobre o Profissional</h3>
+            <p>{{ psico.descricao }}</p>
+        </div>
+        {% else %}
+        <div class="glass-card descricao-section">
+            <h3><i class="fa-solid fa-quote-left"></i> Sobre o Profissional</h3>
+            <p style="opacity: 0.6;"><i class="fa-solid fa-info-circle"></i> Descrição não disponível.</p>
+        </div>
+        {% endif %}
+
+        <!-- Avaliações -->
+        {% if avaliacoes|length > 0 %}
+        <div class="glass-card avaliacoes-section">
+            <h3>⭐ Avaliações ({{ avaliacoes|length }})</h3>
+            {% for avaliacao in avaliacoes[:5] %}
+            <div class="avaliacao-card">
+                <div class="avaliacao-header">
+                    <span class="avaliacao-autor">{{ avaliacao.get('autor', 'Anônimo') }}</span>
+                    <span class="avaliacao-nota">
+                        {% for i in range(5) %}
+                            {% if i < avaliacao.nota %}
+                                <i class="fa-solid fa-star"></i>
+                            {% else %}
+                                <i class="fa-regular fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </span>
+                </div>
+                <div class="avaliacao-texto">{{ avaliacao.get('texto', '') }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="glass-card avaliacoes-section">
+            <div class="sem-avaliacoes">
+                Nenhuma avaliação ainda. Seja o primeiro a avaliar! ⭐
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Botões de Ação -->
+        <button onclick="abrirModalAvaliacao()" class="btn-agendar" style="background: linear-gradient(135deg, #f39c12, #e67e22);">
+            <i class="fa-solid fa-star"></i> Avaliar Psicólogo
+        </button>
+        <button onclick="abrirModalConsulta()" class="btn-agendar">
+            <i class="fa-solid fa-calendar-check"></i> Marcar Consulta
+        </button>
+        <button onclick="window.history.back()" class="btn-voltar">
+            <i class="fa-solid fa-arrow-left"></i> Voltar
+        </button>
+    </div>
+</div>
+
+<!-- Modal de Agendamento -->
+<div id="modalConsulta" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Marcar Consulta</h2>
+            <button class="close-modal" onclick="fecharModalConsulta()">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+
+        <form method="POST" action="{{ url_for('user.agendar_consulta', psico_id=psico._id|string) }}">
+            <div class="form-group">
+                <label for="data_consulta">Data da Consulta</label>
+                <input type="date" id="data_consulta" name="data_consulta" required>
+            </div>
+
+            <div class="form-group">
+                <label for="horario">Horário</label>
+                <input type="time" id="horario" name="horario" required>
+            </div>
+
+            <div class="form-group">
+                <label for="descricao">Motivo/Descrição (opcional)</label>
+                <textarea id="descricao" name="descricao" placeholder="Descreva brevemente o motivo da consulta ou o que você gostaria de conversar..."></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancelar" onclick="fecharModalConsulta()">Cancelar</button>
+                <button type="submit" class="btn-confirmar">Confirmar Agendamento</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bottom Navigation -->
+
+
+<!-- Modal de Avaliação -->
+<div id="modalAvaliacao" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Avaliar {{ psico.nome }}</h2>
+            <button class="close-modal" onclick="fecharModalAvaliacao()">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+
+        <form id="formAvaliacao" onsubmit="enviarAvaliacao(event)">
+            <div class="form-group">
+                <label>Sua Avaliação</label>
+                <div class="star-rating" id="starRating">
+                    <i class="fa-regular fa-star" data-rating="1"></i>
+                    <i class="fa-regular fa-star" data-rating="2"></i>
+                    <i class="fa-regular fa-star" data-rating="3"></i>
+                    <i class="fa-regular fa-star" data-rating="4"></i>
+                    <i class="fa-regular fa-star" data-rating="5"></i>
+                </div>
+                <input type="hidden" id="nota" name="nota" value="0">
+            </div>
+
+            <div class="form-group">
+                <label for="comentario">Comentário (opcional)</label>
+                <textarea id="comentario" name="comentario" placeholder="Compartilhe sua experiência com este psicólogo..."></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-cancelar" onclick="fecharModalAvaliacao()">Cancelar</button>
+                <button type="submit" class="btn-confirmar">Enviar Avaliação</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Sistema de Estrelas
+document.getElementById('starRating')?.addEventListener('click', function(e) {
+    if (e.target.tagName === 'I') {
+        const rating = e.target.getAttribute('data-rating');
+        document.getElementById('nota').value = rating;
+        
+        // Atualizar visual das estrelas
+        const stars = document.querySelectorAll('#starRating i');
+        stars.forEach((star, index) => {
+            if (index < rating) {
+                star.classList.remove('fa-regular');
+                star.classList.add('fa-solid', 'active');
+            } else {
+                star.classList.remove('fa-solid', 'active');
+                star.classList.add('fa-regular');
+            }
+        });
+    }
+});
+
+function abrirModalAvaliacao() {
+    document.getElementById('modalAvaliacao').classList.add('active');
+}
+
+function fecharModalAvaliacao() {
+    const form = document.getElementById('formAvaliacao');
+    if (form) {
+        form.reset();
+    }
+    const stars = document.querySelectorAll('#starRating i');
+    stars.forEach(star => {
+        star.classList.remove('fa-solid', 'active');
+        star.classList.add('fa-regular');
+    });
+    document.getElementById('modalAvaliacao').classList.remove('active');
+}
+
+function enviarAvaliacao(event) {
+    event.preventDefault();
+    
+    const nota = document.getElementById('nota').value;
+    const comentario = document.getElementById('comentario').value;
+    const psico_id = '{{ psico._id }}';
+    
+    if (nota === '0' || nota === '') {
+        alert('Por favor, selecione uma classificação de estrelas.');
+        return;
+    }
+    
+    fetch('/api/avaliar-psico/' + psico_id, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            nota: parseInt(nota),
+            comentario: comentario
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.sucesso) {
+            alert('✅ Avaliação enviada com sucesso!');
+            fecharModalAvaliacao();
+            location.reload();
+        } else {
+            alert('❌ ' + (data.erro || 'Erro ao enviar avaliação'));
+        }
+    })
+    .catch(error => {
+        console.error('Erro:', error);
+        alert('❌ Erro ao enviar avaliação');
+    });
+}
+
+// Fechar modal ao clicar fora dele
+document.getElementById('modalAvaliacao')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        fecharModalAvaliacao();
+    }
+});
+
+function abrirModalConsulta() {
+    // Resetar o formulário completamente
+    const form = document.querySelector('#modalConsulta form');
+    if (form) {
+        form.reset();
+    }
+    
+    // Atualizar data mínima para hoje
+    const dataInput = document.getElementById('data_consulta');
+    if (dataInput) {
+        const hoje = new Date().toISOString().split('T')[0];
+        dataInput.min = hoje;
+        dataInput.value = ''; // Limpar valor
+    }
+    
+    // Limpar horário
+    const horarioInput = document.getElementById('horario');
+    if (horarioInput) {
+        horarioInput.value = '';
+    }
+    
+    // Abrir modal
+    document.getElementById('modalConsulta').classList.add('active');
+}
+
+function fecharModalConsulta() {
+    // Limpar e resetar formulário
+    const form = document.querySelector('#modalConsulta form');
+    if (form) {
+        form.reset();
+    }
+    document.getElementById('modalConsulta').classList.remove('active');
+}
+
+// Fechar modal ao clicar fora dele
+document.getElementById('modalConsulta')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        fecharModalConsulta();
+    }
+});
+
+// Definir data mínima para today
+document.addEventListener('DOMContentLoaded', function() {
+    const dataInput = document.getElementById('data_consulta');
+    const hoje = new Date().toISOString().split('T')[0];
+    if (dataInput) {
+        dataInput.min = hoje;
+    }
+});
+</script>
+{% endblock %}

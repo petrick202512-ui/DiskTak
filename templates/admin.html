@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .admin-header { padding: 40px 20px; }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        padding: 0 20px;
+    }
+    .stat-card {
+        padding: 20px;
+        text-align: center;
+    }
+    .stat-card h4 { font-size: 0.8rem; opacity: 0.6; margin-bottom: 10px; }
+    .stat-card div { font-size: 1.8rem; font-weight: 800; color: var(--soft-green); }
+    
+    .admin-list { padding: 20px; }
+    .admin-list h3 { margin-bottom: 15px; color: var(--light-green); }
+    .admin-item {
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+    <header class="admin-header fade-in">
+        <h2 style="font-size: 1.8rem; color: var(--light-green);">Painel Administrativo</h2>
+        <p>Visão geral da rede de apoio.</p>
+    </header>
+
+    <div class="stats-grid fade-in" style="animation-delay: 0.1s;">
+        <div class="glass-card stat-card">
+            <h4>Usuários</h4>
+            <div>{{ total_users }}</div>
+        </div>
+        <div class="glass-card stat-card">
+            <h4>Psicólogos</h4>
+            <div>{{ total_psicos }}</div>
+        </div>
+        <div class="glass-card stat-card">
+            <h4>Desabafos</h4>
+            <div>{{ total_desabafos }}</div>
+        </div>
+        <div class="glass-card stat-card">
+            <h4>Ativos</h4>
+            <div>{{ total_users + total_psicos }}</div>
+        </div>
+    </div>
+
+    <div class="admin-list fade-in" style="animation-delay: 0.2s;">
+        <h3>Últimos Desabafos</h3>
+        {% for d in desabafos %}
+        <div class="glass-card admin-item">
+            <span style="font-size: 0.9rem;">"{{ d.texto[:40] }}..."</span>
+            <span style="font-size: 0.7rem; opacity: 0.5;">{{ d.data.strftime('%d/%m %H:%M') }}</span>
+        </div>
+        {% else %}
+        <p style="opacity: 0.5; text-align: center;">Nenhum desabafo ainda.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
