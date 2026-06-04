@@ -20,10 +20,8 @@ CORS(app)
 # Configurar SocketIO
 socketio = SocketIO(
     app,
-    cors_allowed_origins="*",
-    async_mode="eventlet"
+    cors_allowed_origins="*"
 )
-
 # Registrar Blueprints
 app.register_blueprint(auth_bp)
 app.register_blueprint(user_bp)
